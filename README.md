@@ -1,2 +1,1 @@
-Introduction to version control: http://r-bio.github.io/intro-git-rstudio/
-
+Introduction to version control: http://r-pkgs.had.co.nz/git.html#git-rstudio
