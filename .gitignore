@@ -1,6 +1,6 @@
 .DS_store
 
-.RData
+*.RData
 .Rhistory
 .Rproj.user
 *.pdf
