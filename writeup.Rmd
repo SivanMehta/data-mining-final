@@ -1,0 +1,32 @@
+---
+title: "Final Project - 36-462: Data Mining"
+author: "Sivan Mehta, Mary St. John, and Graceanne Wong"
+date: "5/12/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# import data sets and any libraries we might need
+```
+
+# Introduction
+
+- Describing your data set
+- What is the problem you are trying to solve?
+
+# EDA and unsupervised analysis
+
+- Exploration of your data, including unsupervised analysis. 
+- Should provide proper motivation for your work
+- Explain any insights and exploration that led to your features and models
+- Can include unsupervised approaches that we learned in the last part of the term if you detect any interesting structure with them.
+- If you don’t find anything interesting, then just describe what you tried
+    - You don’t need to artificially manipulate the data to find something that’s not there.
+
+# Supervised analysis
+
+- How did you make your predictions? Describe this process in detail. 
+- You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described. 
+- What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it? 
+- If there were tuning parameters, how did you pick their values? Can you explain anything about the nature of the relationship between the predictors in your model and the predictions themselves?
