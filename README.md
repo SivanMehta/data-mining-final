@@ -1,2 +1,2 @@
 Introduction to version control: http://r-pkgs.had.co.nz/git.html#git-rstudio
-Author : Mary 
+Author : Mary St John mstjohn
