@@ -16,7 +16,17 @@ library(ggplot2)
 
 snapshot.train <- train[which(train$DEP_DELAY < 150),]
 
+# overall look at delays
 ggplot(snapshot.train) +
   aes(alpha = .5) + 
-  geom_histogram(aes(x = DEP_DELAY), binwidth = 1, color = "red") +
-  geom_histogram(aes(x = ARR_DELAY), binwidth = 1, color = "blue")
+  geom_histogram(aes(x = DEP_DELAY), binwidth = 1, fill = "red") +
+  geom_histogram(aes(x = ARR_DELAY), binwidth = 1, fill = "blue") + 
+  scale_x_continuous(limits = c(-50, 75)) +
+  ggtitle("Delays by Departure or Arrival")
+  
+# Is one carrier more delayed than the others?
+ggplot(snapshot.train) +
+  aes(alpha = .5) + 
+  geom_density(aes(x = DEP_DELAY, color = CARRIER), binwidth = 1) +
+  scale_x_continuous(limits = c(-20, 50)) +
+  ggtitle("Departure Delays by Carrier")
