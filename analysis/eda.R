@@ -7,8 +7,8 @@ train[is.na(train$NAS_DELAY),]$NAS_DELAY <- 0
 train[is.na(train$SECURITY_DELAY),]$SECURITY_DELAY <- 0
 train[is.na(train$LATE_AIRCRAFT_DELAY),]$LATE_AIRCRAFT_DELAY <- 0
 
-late <- train[which(train$DEP_DELAY > 0),]
-on.time <- train[which(train$DEP_DELAY <= 0),]
+late <- train[which(train$DEP_DEL15 > 0),]
+on.time <- train[which(train$DEP_DEL15 == 0),]
 
 base.rate <- nrow(late) / (nrow(late) + nrow(on.time))
 

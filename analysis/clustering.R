@@ -57,26 +57,25 @@ plot(tree.proto)
 # most clear groups, so we'll compare the results of these
 # in predicting DEP_DEL15
 
-assignments.2.com <- cutree(tree.com, 2)
-assignments.4.com <- cutree(tree.com, 4)
-assignments.8.com <- cutree(tree.com, 8)
-assignments.16.com <- cutree(tree.com, 16)
-xtabs(~assignments.2.com + sample.data$DEP_DEL15)
-xtabs(~assignments.4.com + sample.data$DEP_DEL15)
-xtabs(~assignments.8.com + sample.data$DEP_DEL15)
-xtabs(~assignments.16.com + sample.data$DEP_DEL15)
-table(sample.data$DEP_DEL15)
+assignments.com <- cutree(tree.com, 2)
+xtabs(~assignments.com + sample.data$DEP_DEL15)
 
 # Generally, these are doing pretty poorly, as they largely 
 # reflect the proportions in the original data. Let's look
 # at prototype clustering
 
-assignments.2.proto <- protocut(tree.proto, 2)
-assignments.4.proto <- protocut(tree.proto, 4)
-assignments.8.proto <- protocut(tree.proto, 8)
-assignments.16.proto <- protocut(tree.proto, 16)
-xtabs(~assignments.2.proto$cl + sample.data$DEP_DEL15)
-xtabs(~assignments.4.proto$cl + sample.data$DEP_DEL15)
-xtabs(~assignments.8.proto$cl + sample.data$DEP_DEL15)
-xtabs(~assignments.16.proto$cl + sample.data$DEP_DEL15)
+assignments.proto <- protocut(tree.proto, 2)
+xtabs(~assignments.proto$cl + sample.data$DEP_DEL15)
+
 table(sample.data$DEP_DEL15)
+
+# If we use cluster assignments as classifications, what is
+# our missclassifcation rate?
+
+predictions.com <- assignments.com - 1
+right.com <- length(which(predictions.com == sample.data$DEP_DEL15)) / nrow(sample.data)
+misclass.com <- 1 - right.com
+
+predictions.proto <- assignments.proto$cl - 1
+right.proto <- length(which(predictions.proto == sample.data$DEP_DEL15)) / nrow(sample.data)
+misclass.proto <- 1 - right.proto
