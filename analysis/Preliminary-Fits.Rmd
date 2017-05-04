@@ -1,0 +1,116 @@
+---
+title: "Analysis Random Forest"
+author: "Mary St John"
+date: "April 16, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(glmnet)
+```
+
+### Loading the data and cleaning it
+```{r}
+flights2015_clean_s <- read.csv("~/_CMU/Curr Sem 17 Spring/Data Mining/Final/data/flights2015_clean_s.csv")
+flights2015_clean_u <- read.csv("~/_CMU/Curr Sem 17 Spring/Data Mining/Final/data/flights2015_clean_u.csv")
+## Taking out repeat columns
+flights2015_cleaner = flights2015_clean_s[,-which(names(flights2015_clean_s) %in% c("YEAR", "FL_DATE",
+                          "ORIGIN_AIRPORT_SEQ_ID", "X1", "X" , "ORIGIN_AIRPORT_ID", "ORIGIN",
+                          "ORIGIN_STATE_ABR", "DEST_AIRPORT_SEQ_ID", "DEST", "DEST_STATE_ABR",
+                          "UNIQUE_CARRIER", "DEST_AIRPORT_ID"))]
+getDays = function(months, days){
+  monthDays = c(31,28,31,30,31,30,31,31,30,31,30,31)
+  cumdays <<- rep(0, length(days))
+  for (i in 1:length(months)){
+    if (months[i] == 0) {cumdays[i] <<- days[i]}
+    else{
+      cumdays[i] = sum(monthDays[1:(months[i]-1)])+days[i]
+    }
+  }
+  return(cumdays)
+}
+
+flights2015_cleaner$DAY = getDays(flights2015_cleaner$MONTH, flights2015_cleaner$DAY_OF_MONTH)
+response = flights2015_clean_u[,which(colnames(flights2015_clean_u) == "DEP_DEL15")]
+flights15 = cbind("DEP_DEL15" = response, flights2015_cleaner)
+naflights15 = na.omit(flights15)[,-2]
+naresponse = as.double(naflights15[,1])
+factors = c("MONTH, DAY_OF_WEEK")
+# This does not work
+for (i in factors){
+  idx = which(names(flights15) == factors[i])
+  naflights15[,idx] = as.factor(flights15[,idx])
+}
+```
+
+### Test and Training set
+```{r}
+set.seed(1)
+train.idx = sample(1:nrow(naflights15), floor(nrow(naflights15)/(5/4)), replace = FALSE)
+train = naflights15[train.idx,]
+test = naflights15[-train.idx,]
+x.train = naflights15[train.idx,-1]
+y.train = ifelse(naresponse[train.idx] == 0, 0, 1)
+x.test = naflights15[-train.idx,-1]
+y.test = ifelse(naresponse[-train.idx] == 0, 0, 1)
+```
+
+
+### Linear Model
+```{r}
+fit_lm = lm(DEP_DEL15 ~ ., data = train)
+predslm = predict(fit_lm, newdata = test)
+errTest_lm = mean((predslm - test[,1])^2) #.1320 < base rate!
+```
+
+# Lasso
+```{r}
+fit_lasso = cv.glmnet(as.matrix(x.train), y.train)
+predsLasso = predict(fit_lasso, newx = as.matrix(x.test), type = "response", s = fit_lasso$lambda.1se) 
+  #.1331 < base rate, > lm 
+errTest_lasso = mean((predsLasso - y.test)^2)
+coeffs = which(coefficients(fit_lasso) != 0)[-1] - 1
+```
+
+# GAM
+## Make a gam using the  variables selected from Lasso
+```{r}
+library(mgcv)
+fit_gam = gam(train$DEP_DEL15 ~ factor(MONTH) + factor(AIRLINE_ID) + factor(FL_NUM) + factor(ORIGIN_WAC) +
+              s(CRS_DEP_TIME) + s(CRS_ELAPSED_TIME) + factor(DISTANCE_GROUP) + DAY, 
+              data = train, family = "binomial")
+predsGam = predict(fit_gam, newdata = test)
+errTest_gam = mean((predsGam - y.test)^2)
+```
+
+#Fit a Random Forest
+```{r}
+library(randomForest)
+rf = randomForest(as.factor(DEP_DEL15)~.,data = train, importance=TRUE)
+errTrain.rf = mean(y.train == rf$predicted) # .1725 Not good
+if (errTrain.rf > .5){errTrain.rf = 1 - errTrain.rf}
+testPreds = predict(rf, newdata = test, type = "response")
+errTest.rf = mean(y.test == testPreds)
+if (errTest.rf > .5){errTest.rf = 1 - errTest.rf} # .1686 Not good
+```
+
+# LDA
+```{r}
+library(MASS)
+#Fit LDA (you did this in your last homework, so you get it for free)
+fit_lda = lda(x.train,y.train)
+
+#Get LDA predictions on the test data
+yhat_lda = predict(fit_lda,newdata = x.test)$class
+#Test misclassification rate for LDA
+misclass_rate_lda = mean(yhat_lda!=y.test) #.1652 Not good
+
+#Build the transformed coordinates for the training and test data, in case you need them
+z_train = x.train%*%fit_lda$scaling
+z_test = x.test%*%fit_lda$scaling
+
+#This is how you plot data in the LDA space, just as a reminder
+plot(z_train[,1],z_train[,2], pch=as.character(y.train), col = y.train+1)
+```
+
