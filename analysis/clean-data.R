@@ -37,6 +37,16 @@ clean_data_u <- function(path) {
   # because we are only concerned with delayed flights, use ARR_DELAY_NEW instead of ARR_DELAY
   clean$ARR_DELAY <- NULL
   
+  # replace NAs in relevant variables with 0
+  clean[is.na(clean$CARRIER_DELAY),]$CARRIER_DELAY <- 0
+  clean[is.na(clean$WEATHER_DELAY),]$WEATHER_DELAY <- 0
+  clean[is.na(clean$NAS_DELAY),]$NAS_DELAY <- 0
+  clean[is.na(clean$SECURITY_DELAY),]$SECURITY_DELAY <- 0
+  clean[is.na(clean$LATE_AIRCRAFT_DELAY),]$LATE_AIRCRAFT_DELAY <- 0
+  clean[is.na(clean$FIRST_DEP_TIME),]$FIRST_DEP_TIME <- 0
+  clean[is.na(clean$TOTAL_ADD_GTIME),]$TOTAL_ADD_GTIME <- 0
+  clean[is.na(clean$LONGEST_ADD_GTIME),]$LONGEST_ADD_GTIME <- 0
+  
   write.csv(clean, paste(substr(path, 1, nchar(path)-4), "clean_u.csv", sep = "_"))
 }
 
