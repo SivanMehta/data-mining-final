@@ -5,7 +5,8 @@
 
 library(car)
 
-clean_data_u <- function(path) {
+# path = file path to original data sets
+clean_data_u <- function(path = "data/flights2015.csv") {
   raw <- read.csv(path)
   clean <- raw
   # pick which aliases to keep
@@ -37,7 +38,6 @@ clean_data_u <- function(path) {
   # because we are only concerned with delayed flights, use ARR_DELAY_NEW instead of ARR_DELAY
   clean$ARR_DELAY <- NULL
   
-  # write.csv(clean, paste(substr(path, 1, nchar(path)-4), "clean_u.csv", sep = "_"))
   return(clean)
 }
 
@@ -58,9 +58,9 @@ replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY",
              "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
              "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
 
-# path = a path leading to a csv cleaned by clean_data_u()
-clean_data_s <- function(path) {
-  clean_u <- read.csv(path)
+# clean_u = a data set cleaned by clean_data_u()
+clean_data_s <- function(clean_u = NA) {
+  if (is.na(clean_u)) {clean_u <- clean_data_u()}
   if (grepl("guess", path)) {
     clean_u <- clean_u[, !(names(clean_u) %in% drop_guess)]
   }
@@ -71,22 +71,13 @@ clean_data_s <- function(path) {
   
   clean_s$X <- NULL
   
-  write.csv(clean_s, paste(substr(path, 1, nchar(path)-6), "s.csv", sep = "_"))
+  return(clean_s)
 }
 
-# clean data for training, testing, and predicting files for unsupervised analysis
-clean_data_u("data/flights2015.csv")
-clean_data_u("data/flights2016_visible.csv")
-clean_data_u("data/flights2016_guess.csv")
-
-# clean data for training, testing, and predicting files for supervised analysis
-clean_data_s("data/flights2015_clean_u.csv")
-clean_data_s("data/flights2016_visible_clean_u.csv")
-clean_data_s("data/flights2016_guess_clean_u.csv")
-
+# dat = a data set cleaned by clean_data_s
 # separate arrivals and departures, because we are only interesting in predicting delays on departures
-separate <- function(path) {
-  dat <- read.csv(path)
+separate <- function(dat = NA) {
+  if (is.na(dat)) {dat = clean_data_s()}
   depart_ind <- which(dat$ORIGIN == "PIT")
   departures <- dat[depart_ind,]
   arrivals <- dat[-depart_ind,]
@@ -98,11 +89,6 @@ separate <- function(path) {
   arrivals$DEST <- NULL
   arrivals$DEST_STATE_ABR <- NULL
   arrivals$X <- NULL
-  
-  write.csv(departures, paste(substr(path, 1, nchar(path)-12), "dep.csv", sep = "_"))
-  write.csv(arrivals, paste(substr(path, 1, nchar(path)-12), "arr.csv", sep = "_"))
-}
 
-separate("data/flights2015_clean_s.csv")
-separate("data/flights2016_visible_clean_s.csv")
-separate("data/flights2016_guess_clean_s.csv")
+  return(c(departures = departures, arrivals = arrivals))
+}
