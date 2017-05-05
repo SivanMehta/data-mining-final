@@ -66,7 +66,6 @@ errTrain_glm = mean((fitted(fit_glm) - y.train)^2) # .1329
 errTest_glm = mean((guess_test - y.test)^2) # .1319
 ```
 
-
 #Fit a Random Forest
 ```{r}
 library(randomForest)
@@ -76,6 +75,9 @@ if (errTrain.rf > .5){errTrain.rf = 1 - errTrain.rf}
 testPreds = predict(rf, newdata = test, type = "response")
 errTest.rf = mean(y.test == testPreds)
 if (errTest.rf > .5){errTest.rf = 1 - errTest.rf} # .1686 Not good
+
+# Variable importance plot
+varImpPlot(rf.out, main = "Variable importance plots")
 ```
 
 # LDA
@@ -106,5 +108,10 @@ fit_naive_bayes = naiveBayes(x.train, y.train)
 guess_test = predict(fit_naive_bayes, newdata = x.test)
 errTrain_naive_bayes = mean((fitted(fit_naive_bayes) - y.train)^2) # .1329
 errTest_naive_bayes = mean((as.integer(guess_test) - y.test)^2) # .1319
+```
+
+# Boosted Trees
+```{r}
+
 ```
 
