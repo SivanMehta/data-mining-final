@@ -22,3 +22,5 @@ delay_ratio_vis <- function(dat) {
   }
   return(dat)
 }
+
+source("analysis/clean-data.R")
