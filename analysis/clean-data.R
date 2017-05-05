@@ -3,6 +3,8 @@
 # R script for cleaning airline data 
 # Data documentation: https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236
 
+library(car)
+
 clean_data_u <- function(path) {
   raw <- read.csv(path)
   clean <- raw
@@ -63,7 +65,7 @@ clean_data_s <- function(path) {
   }
   clean_s <- clean_u[, !(names(clean_u) %in% drops_all)]
   for (c in replace) {
-    
+    clean_s[,c] <- recode(clean_s[,c], "c(NA)=0")
   }
   
   clean_s$X <- NULL
