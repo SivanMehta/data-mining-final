@@ -40,17 +40,23 @@ clean_data_u <- function(path) {
 
 # for model building, there are some variables which are blocked out in the prediction set
 # so we drop them
-drops <- c("DEP_TIME", "DEP_DELAY", "DEP_DELAY_NEW", "DEP_DEL15", "DEP_DELAY_GROUP", 
+drops <- c("DEP_TIME", "DEP_DELAY", "DEP_DELAY_NEW", "DEP_DELAY_GROUP", 
            "DEP_TIME_BLK", "TAXI_OUT", "WHEELS_OFF", "WHEELS_ON", "TAXI_IN", "ARR_TIME", 
            "ARR_DELAY", "ARR_DELAY_NEW", "ARR_DEL15", "ARR_DELAY_GROUP", "ARR_TIME_BLK",
            "CANCELLED", "CANCELLATION_CODE", "DIVERTED", "ACTUAL_ELAPSED_TIME", "AIR_TIME", 
            "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "SECURITY_DELAY",
-           "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME", "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
+           "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME", "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME",
+           "ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET_ID", "ORIGIN_WAC",
+           "ORIGIN_STATE_WAC", "DEST_AIRPORT_ID", "DEST_AIRPORT_SEQ_ID", "DEST_CITY_MARKET_ID",
+           "DEST_WAC", "DEST_STATE_WAC", "YEAR")
 
 # path = a path leading to a csv cleaned by clean_data_u()
 clean_data_s <- function(path) {
   clean_u <- read.csv(path)
   clean_s <- clean_u[, !(names(clean_u) %in% drops)]
+  
+  clean_s$X <- NULL
+  
   write.csv(clean_s, paste(substr(path, 1, nchar(path)-6), "s.csv", sep = "_"))
 }
 
@@ -63,3 +69,26 @@ clean_data_u("data/flights2016_guess.csv")
 clean_data_s("data/flights2015_clean_u.csv")
 clean_data_s("data/flights2016_visible_clean_u.csv")
 clean_data_s("data/flights2016_guess_clean_u.csv")
+
+# separate arrivals and departures, because we are only interesting in predicting delays on departures
+separate <- function(path) {
+  dat <- read.csv(path)
+  depart_ind <- which(dat$ORIGIN == "PIT")
+  departures <- dat[depart_ind,]
+  arrivals <- dat[-depart_ind,]
+  
+  departures$ORIGIN <- NULL
+  departures$ORIGIN_STATE_ABR <- NULL
+  departures$X <- NULL
+  
+  arrivals$DEST <- NULL
+  arrivals$DEST_STATE_ABR <- NULL
+  arrivals$X <- NULL
+  
+  write.csv(departures, paste(substr(path, 1, nchar(path)-12), "dep.csv", sep = "_"))
+  write.csv(arrivals, paste(substr(path, 1, nchar(path)-12), "arr.csv", sep = "_"))
+}
+
+separate("data/flights2015_clean_s.csv")
+separate("data/flights2016_visible_clean_s.csv")
+separate("data/flights2016_guess_clean_s.csv")
