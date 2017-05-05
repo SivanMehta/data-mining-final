@@ -40,20 +40,31 @@ clean_data_u <- function(path) {
 
 # for model building, there are some variables which are blocked out in the prediction set
 # so we drop them
-drops <- c("DEP_TIME", "DEP_DELAY", "DEP_DELAY_NEW", "DEP_DELAY_GROUP", 
-           "DEP_TIME_BLK", "TAXI_OUT", "WHEELS_OFF", "WHEELS_ON", "TAXI_IN", "ARR_TIME", 
-           "ARR_DELAY", "ARR_DELAY_NEW", "ARR_DEL15", "ARR_DELAY_GROUP", "ARR_TIME_BLK",
-           "CANCELLED", "CANCELLATION_CODE", "DIVERTED", "ACTUAL_ELAPSED_TIME", "AIR_TIME", 
-           "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "SECURITY_DELAY",
-           "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME", "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME",
-           "ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET_ID", "ORIGIN_WAC",
+drop_guess <- c("DEP_TIME", "DEP_DELAY",
+                "DEP_DELAY_NEW", "DEP_DEL15", "DEP_DELAY_GROUP", "DEP_TIME_BLK", "TAXI_OUT", "WHEELS_OFF",
+                "WHEELS_ON", "TAXI_IN", "ARR_TIME", "ARR_DELAY", "ARR_DELAY_NEW", "ARR_DEL15", "ARR_DELAY_GROUP",
+                "ARR_TIME_BLK", "CANCELLED", "CANCELLATION_CODE", "DIVERTED", "ACTUAL_ELAPSED_TIME", "AIR_TIME",
+                "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
+                "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
+
+drops_all <- c("ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET_ID", "ORIGIN_WAC",
            "ORIGIN_STATE_WAC", "DEST_AIRPORT_ID", "DEST_AIRPORT_SEQ_ID", "DEST_CITY_MARKET_ID",
            "DEST_WAC", "DEST_STATE_WAC", "YEAR")
+
+replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", 
+             "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
+             "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
 
 # path = a path leading to a csv cleaned by clean_data_u()
 clean_data_s <- function(path) {
   clean_u <- read.csv(path)
-  clean_s <- clean_u[, !(names(clean_u) %in% drops)]
+  if (grepl("guess", path)) {
+    clean_u <- clean_u[, !(names(clean_u) %in% drop_guess)]
+  }
+  clean_s <- clean_u[, !(names(clean_u) %in% drops_all)]
+  for (c in replace) {
+    
+  }
   
   clean_s$X <- NULL
   
