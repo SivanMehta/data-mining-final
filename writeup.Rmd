@@ -6,8 +6,11 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 # import data sets and any libraries we might need
+source("./analysis/clean-data.R")
+source("./analysis/load-data.R")
+library(ggplot2)
 ```
 
 # Introduction
@@ -29,6 +32,38 @@ In this report, we will focus on *departing* flights, looking to predict whether
 - Can include unsupervised approaches that we learned in the last part of the term if you detect any interesting structure with them.
 - If you don’t find anything interesting, then just describe what you tried
     - You don’t need to artificially manipulate the data to find something that’s not there.
+
+First, we'll look to see if any particular carriers or regions are particularly egregious in delays.
+
+```{r, message = FALSE, warning = FALSE}
+library(gridExtra)
+library(dplyr)
+sample.data <- na.omit(sample_n(train, nrow(train) * .1))
+
+# Is one carrier more delayed than the others?
+carrier.delays <- ggplot(train) +
+  aes(alpha = .5) + 
+  geom_density(aes(x = DEP_DELAY, color = UNIQUE_CARRIER)) +
+  
+  guides(colour = FALSE) + 
+  scale_x_continuous(limits = c(-20, 50)) +
+  labs(x = "Departure Delay in Minutes") +
+  ggtitle("Departure Delays by Carrier")
+
+# What about a particular airport?
+origin.delays <- ggplot(train) +
+  aes(alpha = .5) + 
+  geom_density(aes(x = DEP_DELAY, color = as.factor(ORIGIN_WAC))) +
+  
+  guides(colour = FALSE) + 
+  scale_x_continuous(limits = c(-20, 50)) +
+  labs(x = "Departure Delay in Minutes") +
+  ggtitle("Departure Delays by Origin Region")
+
+grid.arrange(carrier.delays, origin.delays)
+```
+
+While it is hard to glean much structure from this, we do see that there is one region with a noticeable bump in later delays. That happens to be World Area Code (or `ORIGIN_WAC` in the dataset) 54, which corresponds to flights leaving from Tennesee.
 
 # Supervised analysis
 

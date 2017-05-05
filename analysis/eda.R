@@ -1,32 +1,24 @@
 source("./analysis/load-data.R")
-
-# replace NAs in _DELAY variables with 0
-train[is.na(train$CARRIER_DELAY),]$CARRIER_DELAY <- 0
-train[is.na(train$WEATHER_DELAY),]$WEATHER_DELAY <- 0
-train[is.na(train$NAS_DELAY),]$NAS_DELAY <- 0
-train[is.na(train$SECURITY_DELAY),]$SECURITY_DELAY <- 0
-train[is.na(train$LATE_AIRCRAFT_DELAY),]$LATE_AIRCRAFT_DELAY <- 0
+library(ggplot2)
+library(dplyr)
 
 late <- train[which(train$DEP_DEL15 > 0),]
 on.time <- train[which(train$DEP_DEL15 == 0),]
 
 base.rate <- nrow(late) / (nrow(late) + nrow(on.time))
 
-library(ggplot2)
+sample.data <- na.omit(sample_n(train, nrow(train) * .1))
 
-snapshot.train <- train[which(train$DEP_DELAY < 150),]
-
-# overall look at delays
-ggplot(snapshot.train) +
-  aes(alpha = .5) + 
-  geom_histogram(aes(x = DEP_DELAY), binwidth = 1, fill = "red") +
-  geom_histogram(aes(x = ARR_DELAY), binwidth = 1, fill = "blue") + 
-  scale_x_continuous(limits = c(-50, 75)) +
-  ggtitle("Delays by Departure or Arrival")
-  
 # Is one carrier more delayed than the others?
-ggplot(snapshot.train) +
+ggplot(train) +
   aes(alpha = .5) + 
-  geom_density(aes(x = DEP_DELAY, color = CARRIER), binwidth = 1) +
+  geom_density(aes(x = DEP_DELAY, color = UNIQUE_CARRIER)) +
   scale_x_continuous(limits = c(-20, 50)) +
   ggtitle("Departure Delays by Carrier")
+
+# What about a particular airport?
+ggplot(train) +
+  aes(alpha = .5) + 
+  geom_density(aes(x = DEP_DELAY, color = as.factor(ORIGIN_WAC))) +
+  scale_x_continuous(limits = c(-20, 50)) +
+  ggtitle("Departure Delays by Origin Airport")
