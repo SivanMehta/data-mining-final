@@ -5,7 +5,8 @@
 
 library(car)
 
-clean_data_u <- function(path) {
+# path = file path to original data sets
+clean_data_u <- function(path = "data/flights2015.csv") {
   raw <- read.csv(path)
   clean <- raw
   # pick which aliases to keep
@@ -57,9 +58,9 @@ replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY",
              "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
              "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
 
-# path = a path leading to a csv cleaned by clean_data_u()
-clean_data_s <- function(path) {
-  clean_u <- read.csv(path)
+# clean_u = a data set cleaned by clean_data_u()
+clean_data_s <- function(clean_u = NA) {
+  if (is.na(clean_u)) {clean_u <- clean_data_u()}
   if (grepl("guess", path)) {
     clean_u <- clean_u[, !(names(clean_u) %in% drop_guess)]
   }
@@ -70,12 +71,13 @@ clean_data_s <- function(path) {
   
   clean_s$X <- NULL
   
-  return(clean)
+  return(clean_s)
 }
 
+# dat = a data set cleaned by clean_data_s
 # separate arrivals and departures, because we are only interesting in predicting delays on departures
-separate <- function(path) {
-  dat <- read.csv(path)
+separate <- function(dat = NA) {
+  if (is.na(dat)) {dat = clean_data_s()}
   depart_ind <- which(dat$ORIGIN == "PIT")
   departures <- dat[depart_ind,]
   arrivals <- dat[-depart_ind,]

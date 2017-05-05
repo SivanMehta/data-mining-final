@@ -10,7 +10,7 @@ guess <- read.csv("data/flights2016_guess_clean_s.csv")
 # calculate the number of flights that have been delayed that day, 
 # up until that time for visible data (2015 and 2016_visible)
 delay_ratio_vis <- function(dat) {
-  dat$DELAY_RATIO <- rep(0, nrow(dat))
+  dat$DELAY_RATIO_DEP <- rep(0, nrow(dat))
   dates <- levels(dat$FL_DATE)
   for (date in dates) {
     day_dat <- dat[which(dat$FL_DATE == date),]
