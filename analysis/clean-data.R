@@ -3,6 +3,8 @@
 # R script for cleaning airline data 
 # Data documentation: https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236
 
+library(car)
+
 clean_data_u <- function(path) {
   raw <- read.csv(path)
   clean <- raw
@@ -35,35 +37,37 @@ clean_data_u <- function(path) {
   # because we are only concerned with delayed flights, use ARR_DELAY_NEW instead of ARR_DELAY
   clean$ARR_DELAY <- NULL
   
-  # replace NAs in relevant variables with 0
-  clean[is.na(clean$CARRIER_DELAY),]$CARRIER_DELAY <- 0
-  clean[is.na(clean$WEATHER_DELAY),]$WEATHER_DELAY <- 0
-  clean[is.na(clean$NAS_DELAY),]$NAS_DELAY <- 0
-  clean[is.na(clean$SECURITY_DELAY),]$SECURITY_DELAY <- 0
-  clean[is.na(clean$LATE_AIRCRAFT_DELAY),]$LATE_AIRCRAFT_DELAY <- 0
-  clean[is.na(clean$FIRST_DEP_TIME),]$FIRST_DEP_TIME <- 0
-  clean[is.na(clean$TOTAL_ADD_GTIME),]$TOTAL_ADD_GTIME <- 0
-  clean[is.na(clean$LONGEST_ADD_GTIME),]$LONGEST_ADD_GTIME <- 0
-  
-  write.csv(clean, paste(substr(path, 1, nchar(path)-4), "clean_u.csv", sep = "_"))
+  # write.csv(clean, paste(substr(path, 1, nchar(path)-4), "clean_u.csv", sep = "_"))
+  return(clean)
 }
 
 # for model building, there are some variables which are blocked out in the prediction set
 # so we drop them
-drops <- c("DEP_TIME", "DEP_DELAY", "DEP_DELAY_NEW", "DEP_DELAY_GROUP", 
-           "DEP_TIME_BLK", "TAXI_OUT", "WHEELS_OFF", "WHEELS_ON", "TAXI_IN", "ARR_TIME", 
-           "ARR_DELAY", "ARR_DELAY_NEW", "ARR_DEL15", "ARR_DELAY_GROUP", "ARR_TIME_BLK",
-           "CANCELLED", "CANCELLATION_CODE", "DIVERTED", "ACTUAL_ELAPSED_TIME", "AIR_TIME", 
-           "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "SECURITY_DELAY",
-           "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME", "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME",
-           "ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET_ID", "ORIGIN_WAC",
+drop_guess <- c("DEP_TIME", "DEP_DELAY",
+                "DEP_DELAY_NEW", "DEP_DEL15", "DEP_DELAY_GROUP", "DEP_TIME_BLK", "TAXI_OUT", "WHEELS_OFF",
+                "WHEELS_ON", "TAXI_IN", "ARR_TIME", "ARR_DELAY", "ARR_DELAY_NEW", "ARR_DEL15", "ARR_DELAY_GROUP",
+                "ARR_TIME_BLK", "CANCELLED", "CANCELLATION_CODE", "DIVERTED", "ACTUAL_ELAPSED_TIME", "AIR_TIME",
+                "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
+                "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
+
+drops_all <- c("ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET_ID", "ORIGIN_WAC",
            "ORIGIN_STATE_WAC", "DEST_AIRPORT_ID", "DEST_AIRPORT_SEQ_ID", "DEST_CITY_MARKET_ID",
            "DEST_WAC", "DEST_STATE_WAC", "YEAR")
+
+replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", 
+             "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
+             "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
 
 # path = a path leading to a csv cleaned by clean_data_u()
 clean_data_s <- function(path) {
   clean_u <- read.csv(path)
-  clean_s <- clean_u[, !(names(clean_u) %in% drops)]
+  if (grepl("guess", path)) {
+    clean_u <- clean_u[, !(names(clean_u) %in% drop_guess)]
+  }
+  clean_s <- clean_u[, !(names(clean_u) %in% drops_all)]
+  for (c in replace) {
+    clean_s[,c] <- recode(clean_s[,c], "c(NA)=0")
+  }
   
   clean_s$X <- NULL
   
