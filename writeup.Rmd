@@ -15,9 +15,15 @@ knitr::opts_chunk$set(echo = TRUE)
 - Describing your data set
 - What is the problem you are trying to solve?
 
+The dataset at hand is a concerns flights to and from the Pittsburgh International Airport (PIT). Each observation is a single flight either entering or leaving Pittsburgh. While the predictive focus will be on departing flights, we will also look at flights overall to get a general structural overview of the dataset.
+
+Of the 57 variables provided, they can be split into a few primary groups. Time Period information concerns the date of the flight. Airline information pertains to the specific airline and carrier of the flight. Origin information concerns origin airport details, and Destination information contains similar details. Departure and Arrival performance information contains metrics on the delays, taxiing, etc. Finally, there are general delay metrics, detailing the breakdown of what contributed to the overall delay, if any.
+
+In this report, we will focus on *departing* flights, looking to predict whether or not the flight will be delayed. We will first take a general unsupervised learning approach, attempting to ascertain any underlying structure to the dataset. Then we will move towards supervised analysis, attempting to actually predict whether or not a flight will be delayed.
+
 # EDA and unsupervised analysis
 
-- Exploration of your data, including unsupervised analysis. 
+- Exploration of your data, including unsupervised analysis.
 - Should provide proper motivation for your work
 - Explain any insights and exploration that led to your features and models
 - Can include unsupervised approaches that we learned in the last part of the term if you detect any interesting structure with them.
@@ -26,7 +32,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Supervised analysis
 
-- How did you make your predictions? Describe this process in detail. 
-- You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described. 
-- What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it? 
+- How did you make your predictions? Describe this process in detail.
+- You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described.
+- What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it?
 - If there were tuning parameters, how did you pick their values? Can you explain anything about the nature of the relationship between the predictors in your model and the predictions themselves?
