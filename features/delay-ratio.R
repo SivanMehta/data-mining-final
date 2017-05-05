@@ -7,8 +7,8 @@ train <- read.csv("data/flights2015_clean_s.csv")
 test <- read.csv("data/flights2016_visible_clean_s.csv")
 guess <- read.csv("data/flights2016_guess_clean_s.csv")
 
-# calculate the number of flights that have been delayed that day, up until that time
-# for visible data (2015 and 2016_visible)
+# calculate the number of flights that have been delayed that day, 
+# up until that time for visible data (2015 and 2016_visible)
 delay_ratio_vis <- function(dat) {
   dat$DELAY_RATIO <- rep(0, nrow(dat))
   dates <- levels(dat$FL_DATE)
