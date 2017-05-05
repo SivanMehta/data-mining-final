@@ -13,12 +13,6 @@ library(glmnet)
 ### Loading the data and cleaning it
 ```{r}
 flights2015_clean_s <- read.csv("~/_CMU/Curr Sem 17 Spring/Data Mining/Final/data/flights2015_clean_s.csv")
-flights2015_clean_u <- read.csv("~/_CMU/Curr Sem 17 Spring/Data Mining/Final/data/flights2015_clean_u.csv")
-## Taking out repeat columns
-flights2015_cleaner = flights2015_clean_s[,-which(names(flights2015_clean_s) %in% c("YEAR", "FL_DATE",
-                          "ORIGIN_AIRPORT_SEQ_ID", "X1", "X" , "ORIGIN_AIRPORT_ID", "ORIGIN",
-                          "ORIGIN_STATE_ABR", "DEST_AIRPORT_SEQ_ID", "DEST", "DEST_STATE_ABR",
-                          "UNIQUE_CARRIER", "DEST_AIRPORT_ID", ""))]
 getDays = function(months, days){
   monthDays = c(31,28,31,30,31,30,31,31,30,31,30,31)
   cumdays <<- rep(0, length(days))
@@ -31,8 +25,7 @@ getDays = function(months, days){
   return(cumdays)
 }
 
-flights2015_cleaner$DAY = getDays(flights2015_cleaner$MONTH, flights2015_cleaner$DAY_OF_MONTH)
-response = flights2015_clean_u[,which(colnames(flights2015_clean_u) == "DEP_DEL15")]
+flights2015_clean_s$DAY = getDays(flights2015_clean_s$MONTH, flights2015_clean_s$DAY_OF_MONTH)
 flights15 = cbind("DEP_DEL15" = response, flights2015_cleaner)
 naflights15 = na.omit(flights15)[,-2]
 naresponse = as.double(naflights15[,1])
@@ -45,19 +38,6 @@ for (i in factors){
 
 base_rate = mean(naresponse)
 ```
-
-### Test and Training set
-```{r}
-set.seed(1)
-train.idx = sample(1:nrow(naflights15), floor(nrow(naflights15)/(5/4)), replace = FALSE)
-train = naflights15[train.idx,]
-test = naflights15[-train.idx,]
-x.train = naflights15[train.idx,-1]
-y.train = ifelse(naresponse[train.idx] == 0, 0, 1)
-x.test = naflights15[-train.idx,-1]
-y.test = ifelse(naresponse[-train.idx] == 0, 0, 1)
-```
-
 
 ### Linear Model
 ```{r}
