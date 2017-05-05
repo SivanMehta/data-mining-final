@@ -2,31 +2,97 @@
 title: "Final Project - 36-462: Data Mining"
 author: "Sivan Mehta, Mary St. John, and Graceanne Wong"
 date: "5/12/2017"
-output: pdf_document
+output: 
+  pdf_document:
+    fig_height: 4
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 # import data sets and any libraries we might need
+source("./analysis/clean-data.R")
+source("./analysis/load-data.R")
+library(ggplot2)
 ```
 
 # Introduction
 
-- Describing your data set
-- What is the problem you are trying to solve?
+The dataset at hand is a concerns flights to and from the Pittsburgh International Airport (PIT). Each observation is a single flight either entering or leaving Pittsburgh. While the predictive focus will be on departing flights, we will also look at flights overall to get a general structural overview of the dataset.
+
+Of the 57 variables provided, they can be split into a few primary groups. Time Period information concerns the date of the flight. Airline information pertains to the specific airline and carrier of the flight. Origin information concerns origin airport details, and Destination information contains similar details. Departure and Arrival performance information contains metrics on the delays, taxiing, etc. Finally, there are general delay metrics, detailing the breakdown of what contributed to the overall delay, if any.
+
+In this report, we will focus on *departing* flights, looking to predict whether or not the flight will be delayed. We will first take a general unsupervised learning approach, attempting to ascertain any underlying structure to the dataset. Then we will move towards supervised analysis, attempting to actually predict whether or not a flight will be delayed.
 
 # EDA and unsupervised analysis
 
-- Exploration of your data, including unsupervised analysis. 
-- Should provide proper motivation for your work
-- Explain any insights and exploration that led to your features and models
-- Can include unsupervised approaches that we learned in the last part of the term if you detect any interesting structure with them.
-- If you don’t find anything interesting, then just describe what you tried
-    - You don’t need to artificially manipulate the data to find something that’s not there.
+First, we'll look to see if any particular carriers or regions are particularly egregious in delays.
+
+```{r, message = FALSE, warning = FALSE}
+library(gridExtra)
+library(dplyr)
+sample.data <- na.omit(sample_n(train, nrow(train) * .1))
+
+# Is one carrier more delayed than the others?
+carrier.delays <- ggplot(train) +
+  aes(alpha = .5) + 
+  geom_density(aes(x = DEP_DELAY, color = UNIQUE_CARRIER)) +
+  
+  guides(colour = FALSE) + 
+  scale_x_continuous(limits = c(-20, 50)) +
+  labs(x = "Departure Delay in Minutes") +
+  ggtitle("Departure Delays by Carrier")
+
+# What about a particular airport?
+origin.delays <- ggplot(train) +
+  aes(alpha = .5) + 
+  geom_density(aes(x = DEP_DELAY, color = as.factor(ORIGIN_WAC))) +
+  
+  guides(colour = FALSE) + 
+  scale_x_continuous(limits = c(-20, 50)) +
+  labs(x = "Departure Delay in Minutes") +
+  ggtitle("Departure Delays by Origin Region")
+
+grid.arrange(carrier.delays, origin.delays)
+```
+
+While it is hard to glean much structure from this, we do see that there is one region with a noticeable bump in later delays. That happens to be World Area Code (or `ORIGIN_WAC` in the dataset) 54, which corresponds to flights leaving from Tennesee.
+
+Next, we can try clustering to see if they flights break down into meaningful groups. This perhaps could give us some insight on the general types of flights we may see.
+
+```{r, warning = FALSE}
+library(protoclust)
+sample.data <- sample_n(test, nrow(test) * .1)
+flights.dist <- dist(sample.data)
+
+tree.com <- hclust(flights.dist, method = "complete")
+tree.proto <- protoclust(flights.dist)
+
+par(mfrow = c(1, 2))
+
+plot(tree.com, main = "Complete Linkage")
+plot(tree.proto, main = "Prototype Clustering")
+
+assignments.com <- cutree(tree.com, 2)
+assignments.proto <- protocut(tree.proto, 2)
+
+predictions.com <- assignments.com - 1
+right.com <- length(which(predictions.com == sample.data$DEP_DEL15)) / nrow(sample.data)
+misclass.com <- right.com
+
+predictions.proto <- assignments.proto$cl - 1
+right.proto <- length(which(predictions.proto == sample.data$DEP_DEL15)) / nrow(sample.data)
+misclass.proto <- right.proto
+
+late <- train[which(train$DEP_DEL15 > 0),]
+on.time <- train[which(train$DEP_DEL15 == 0),]
+base.rate <- nrow(late) / (nrow(late) + nrow(on.time))
+```
+
+Generally, these are doing pretty poorly, garnering misclassification rates of nearly 50%, **much** worse than the base rate of `r round(base.rate*100, 2)`% When using the assigned clusters, at almost any level, as a classification.
 
 # Supervised analysis
 
-- How did you make your predictions? Describe this process in detail. 
-- You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described. 
-- What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it? 
+- How did you make your predictions? Describe this process in detail.
+- You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described.
+- What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it?
 - If there were tuning parameters, how did you pick their values? Can you explain anything about the nature of the relationship between the predictors in your model and the predictions themselves?
