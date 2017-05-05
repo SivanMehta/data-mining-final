@@ -37,7 +37,6 @@ clean_data_u <- function(path) {
   # because we are only concerned with delayed flights, use ARR_DELAY_NEW instead of ARR_DELAY
   clean$ARR_DELAY <- NULL
   
-  # write.csv(clean, paste(substr(path, 1, nchar(path)-4), "clean_u.csv", sep = "_"))
   return(clean)
 }
 
@@ -71,18 +70,8 @@ clean_data_s <- function(path) {
   
   clean_s$X <- NULL
   
-  write.csv(clean_s, paste(substr(path, 1, nchar(path)-6), "s.csv", sep = "_"))
+  return(clean)
 }
-
-# clean data for training, testing, and predicting files for unsupervised analysis
-clean_data_u("data/flights2015.csv")
-clean_data_u("data/flights2016_visible.csv")
-clean_data_u("data/flights2016_guess.csv")
-
-# clean data for training, testing, and predicting files for supervised analysis
-clean_data_s("data/flights2015_clean_u.csv")
-clean_data_s("data/flights2016_visible_clean_u.csv")
-clean_data_s("data/flights2016_guess_clean_u.csv")
 
 # separate arrivals and departures, because we are only interesting in predicting delays on departures
 separate <- function(path) {
@@ -98,11 +87,6 @@ separate <- function(path) {
   arrivals$DEST <- NULL
   arrivals$DEST_STATE_ABR <- NULL
   arrivals$X <- NULL
-  
-  write.csv(departures, paste(substr(path, 1, nchar(path)-12), "dep.csv", sep = "_"))
-  write.csv(arrivals, paste(substr(path, 1, nchar(path)-12), "arr.csv", sep = "_"))
-}
 
-separate("data/flights2015_clean_s.csv")
-separate("data/flights2016_visible_clean_s.csv")
-separate("data/flights2016_guess_clean_s.csv")
+  return(c(departures = departures, arrivals = arrivals))
+}
