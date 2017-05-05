@@ -78,17 +78,6 @@ errTest_lasso = mean((predsLasso_test - y.test)^2) # .1331
 coeffs = which(coefficients(fit_lasso) != 0)[-1] - 1 #There's only one variable in this model
 ```
 
-# GAM
-## Make a gam using the  variables selected from Lasso
-```{r}
-library(mgcv)
-fit_gam = gam(train$DEP_DEL15 ~ factor(MONTH) + factor(AIRLINE_ID) + factor(FL_NUM) + factor(ORIGIN_WAC) +
-              s(CRS_DEP_TIME) + s(CRS_ELAPSED_TIME) + factor(DISTANCE_GROUP) + DAY, 
-              data = train, family = "binomial")
-predsGam = predict(fit_gam, newdata = test)
-errTest_gam = mean((predsGam - y.test)^2)
-```
-
 # GLM
 ```{r}
 fit_glm = glm(DEP_DEL15 ~ ., data = train, family='binomial')
