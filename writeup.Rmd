@@ -21,6 +21,8 @@ The dataset at hand is a concerns flights to and from the Pittsburgh Internation
 
 Of the 57 variables provided, they can be split into a few primary groups. Time Period information concerns the date of the flight. Airline information pertains to the specific airline and carrier of the flight. Origin information concerns origin airport details, and Destination information contains similar details. Departure and Arrival performance information contains metrics on the delays, taxiing, etc. Finally, there are general delay metrics, detailing the breakdown of what contributed to the overall delay, if any.
 
+To predict flights, we will be working with three data sets with flight data from the Pittsburgh airport. Our training dataset is all the arrivals and departures from 2015. Our test data is arrivals and departures up to a random timepoint in the day. After that time point, we have unlabeled data on which we will form our guesses.
+
 In this report, we will focus on *departing* flights, looking to predict whether or not the flight will be delayed. We will first take a general unsupervised learning approach, attempting to ascertain any underlying structure to the dataset. Then we will move towards supervised analysis, attempting to actually predict whether or not a flight will be delayed.
 
 # EDA and unsupervised analysis
