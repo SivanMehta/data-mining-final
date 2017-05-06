@@ -1,9 +1,11 @@
 
-# National Air System Delay
-# This is the number of NAS delays there have been on each day so far for each flight
+# National Air System Delay# This is the number of NAS delays there have been on each day so far for each flight
 #### We may want to change this to within the last hour, or within the last X many flights
 
 # Change NA values to 0
+
+source("./features/ordered-data-set.R")
+library(lubridate)
 
 with.nas.delay <- function(df) {
   df <- orderDataSet(df)

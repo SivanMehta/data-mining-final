@@ -1,6 +1,5 @@
 source("./analysis/clean-data.R")
-train <- read.csv("./data/flights2015.csv")
-
+source("./features/ordered-data-set.R")
 library(lubridate)
 
 with.weather.delay <- function(df){
