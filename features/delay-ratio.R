@@ -5,8 +5,8 @@
 
 source("analysis/clean-data.R")
 
-# calculate the number of flights that have been delayed that day, up until that time
-# for visible data (2015 and 2016_visible)
+# calculate the number of flights that have been delayed that day, 
+# up until that time for visible data (2015 and 2016_visible)
 delay_ratio_vis <- function(dat) {
   ncol <- length(levels(dat$UNIQUE_CARRIER)) + 2
   features <- data.frame(matrix(0, nrow = nrow(dat), ncol = ncol))
