@@ -56,10 +56,6 @@ clean_data_vis <- function() {
 clean_data_guess <- function() {
   clean <- read.csv("data/flights2016_guess.csv")
   
-  for (c in replace) {
-    clean[,c] <- recode(clean[,c], "c(NA)=0")
-  }
-  
   clean <- clean[, !(names(clean) %in% drops_all)]
   clean <- clean[, !(names(clean) %in% drop_guess)]
   
@@ -89,3 +85,17 @@ separate <- function(dat = NA) {
 train <- clean_data_train()
 vis <- clean_data_vis()
 guess <- clean_data_guess()
+
+
+# add a column of the time a flight arrives in PIT or leaves from PIT
+pit_time <- function(dat) {
+  if (dat[10] == "PIT") {
+    return(dat[14])
+  } else if (dat[12] == "PIT") {
+    return(dat[25])
+  }
+}
+
+train$CRS_PIT_TIME <- apply(train, 1, pit_time)
+vis$CRS_PIT_TIME <- apply(vis, 1, pit_time)
+guess$CRS_PIT_TIME <- apply(guess, 1, pit_time)
