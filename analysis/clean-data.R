@@ -3,43 +3,9 @@
 # R script for cleaning airline data 
 # Data documentation: https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236
 
-library(car)
+# call `source("clean-data.R")` to use
 
-# path = file path to original data sets
-clean_data_u <- function(path = "data/flights2015.csv") {
-  raw <- read.csv(path)
-  clean <- raw
-  # pick which aliases to keep
-  # drop full names of states for origin and destination
-  clean$ORIGIN_STATE_NM <- NULL
-  clean$DEST_STATE_NM <- NULL
-  # drop full names of city for origin and destination 
-  clean$ORIGIN_CITY_NAME <- NULL
-  clean$DEST_CITY_NAME <- NULL
-  
-  # the BOT suggests using UNIQUE_CARRIER_ID for analysis instead of CARRIER
-  clean$CARRIER <- NULL
-  
-  # dropping TAIL_NUM because there are 2770 levels and it is not explained by the BOT website
-  clean$TAIL_NUM <- NULL
-  
-  # STATE_FIPS is a numerical coding for state and thus redundant
-  clean$ORIGIN_STATE_FIPS <- NULL
-  clean$DEST_STATE_FIPS <- NULL
-  
-  # Making an AM = 1/PM = 0 
-  # Based on the scheduled departure and arrival times, not the actual
-  clean$DEP_AM_PM <- ifelse(clean$CRS_DEP_TIME < 1200, "1", "0")
-  clean$ARR_AM_PM <- ifelse(clean$CRS_ARR_TIME < 1200, "1", "0")
-  
-  # FLIGHTS is the number of flights but because every row is a single flight... 
-  clean$FLIGHTS <- NULL
-  
-  # because we are only concerned with delayed flights, use ARR_DELAY_NEW instead of ARR_DELAY
-  clean$ARR_DELAY <- NULL
-  
-  return(clean)
-}
+library(car)
 
 # for model building, there are some variables which are blocked out in the prediction set
 # so we drop them
@@ -50,34 +16,60 @@ drop_guess <- c("DEP_TIME", "DEP_DELAY",
                 "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
                 "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
 
+# some variables are redundant, so we drop them
 drops_all <- c("ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET_ID", "ORIGIN_WAC",
            "ORIGIN_STATE_WAC", "DEST_AIRPORT_ID", "DEST_AIRPORT_SEQ_ID", "DEST_CITY_MARKET_ID",
-           "DEST_WAC", "DEST_STATE_WAC", "YEAR")
+           "DEST_WAC", "DEST_STATE_WAC", "YEAR", "ORIGIN_STATE_NM", "DEST_STATE_NM",
+           "ORIGIN_CITY_NAME", "DEST_CITY_NAME", "CARRIER", "ORIGIN_STATE_FIPS", "DEST_STATE_FIPS",
+           "FLIGHTS", "ARR_DELAY")
 
 replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", 
              "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
              "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
 
-# clean_u = a data set cleaned by clean_data_u()
-clean_data_s <- function(clean_u = NA) {
-  if (is.na(clean_u)) {clean_u <- clean_data_u()}
-  if (grepl("guess", path)) {
-    clean_u <- clean_u[, !(names(clean_u) %in% drop_guess)]
-  }
-  clean_s <- clean_u[, !(names(clean_u) %in% drops_all)]
+# cleans the 2015 flight data that is used to build the model
+clean_data_train <- function() {
+  clean <- read.csv("data/flights2015.csv")
+
   for (c in replace) {
-    clean_s[,c] <- recode(clean_s[,c], "c(NA)=0")
+    clean[,c] <- recode(clean[,c], "c(NA)=0")
   }
+  clean <- clean[, !(names(clean) %in% drops_all)]
   
-  clean_s$X <- NULL
-  
-  return(clean_s)
+  return(clean)
 }
 
-# dat = a data set cleaned by clean_data_s
+# cleans the 2016 flight data that we use to test our model
+clean_data_vis <- function() {
+  clean <- read.csv("data/flights2016_visible.csv")
+  
+  for (c in replace) {
+    clean[,c] <- recode(clean[,c], "c(NA)=0")
+  }
+  
+  clean <- clean[, !(names(clean) %in% drops_all)]
+
+  return(clean)
+}
+
+# cleans the 2016 flight data that we predict on
+clean_data_guess <- function() {
+  clean <- read.csv("data/flights2016_guess.csv")
+  
+  for (c in replace) {
+    clean[,c] <- recode(clean[,c], "c(NA)=0")
+  }
+  
+  clean <- clean[, !(names(clean) %in% drops_all)]
+  clean <- clean[, !(names(clean) %in% drop_guess)]
+  
+  return(clean)
+}
+
 # separate arrivals and departures, because we are only interesting in predicting delays on departures
+# by default this is done for the 2015 data
 separate <- function(dat = NA) {
-  if (is.na(dat)) {dat = clean_data_s()}
+  if (is.na(dat)) {dat = clean_data_train()}
   depart_ind <- which(dat$ORIGIN == "PIT")
   departures <- dat[depart_ind,]
   arrivals <- dat[-depart_ind,]
@@ -92,3 +84,8 @@ separate <- function(dat = NA) {
 
   return(c(departures = departures, arrivals = arrivals))
 }
+
+# loads all cleaned data into session
+train <- clean_data_train()
+vis <- clean_data_vis()
+guess <- clean_data_guess()
