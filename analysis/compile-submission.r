@@ -1,4 +1,9 @@
-flights2016 <- read.csv("./data/flights2016.csv")
+source("./analysis/clean-data.R")
+source("./features/add-features.R")
+
+guesses <- add.features(data.2016)
+
+guesses.2016 <- data.2016[which(data.2016$is.guess == 1), ]
 
 delay.guesses <- rep(0, nrow(flights2016))
 performance.guess <- 0

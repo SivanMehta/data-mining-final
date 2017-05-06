@@ -1,20 +1,11 @@
 # 36-462: Data Mining Final
 # 04/16/17
-# R script for cleaning airline data 
+# R script for cleaning airline data
 # Data documentation: https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236
 
 # call `source("clean-data.R")` to use
 
 library(dplyr)
-
-# for model building, there are some variables which are blocked out in the prediction set
-# so we drop them
-drop_guess <- c("DEP_TIME", "DEP_DELAY",
-                "DEP_DELAY_NEW", "DEP_DEL15", "DEP_DELAY_GROUP", "DEP_TIME_BLK", "TAXI_OUT", "WHEELS_OFF",
-                "WHEELS_ON", "TAXI_IN", "ARR_TIME", "ARR_DELAY", "ARR_DELAY_NEW", "ARR_DEL15", "ARR_DELAY_GROUP",
-                "ARR_TIME_BLK", "CANCELLED", "CANCELLATION_CODE", "DIVERTED", "ACTUAL_ELAPSED_TIME", "AIR_TIME",
-                "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
-                "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
 
 # some variables are redundant, so we drop them
 drops_all <- c("ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET_ID", "ORIGIN_WAC",
@@ -23,7 +14,10 @@ drops_all <- c("ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET
            "ORIGIN_CITY_NAME", "DEST_CITY_NAME", "CARRIER", "ORIGIN_STATE_FIPS", "DEST_STATE_FIPS",
            "FLIGHTS", "ARR_DELAY")
 
-replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", 
+keep.2016 <- c("DEP_DEL15", "WEATHER_DELAY", "DIVERTED",
+              "MONTH", "DAY_OF_MONTH", "CRS_DEP_TIME", "FL_DATE")
+
+replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY",
              "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
              "TOTAL_ADD_GTIME", "LONGEST_ADD_GTIME")
 
@@ -35,31 +29,28 @@ clean_data_train <- function() {
     clean[,c] <- car::recode(clean[,c], "c(NA)=0")
   }
   clean <- clean[, !(names(clean) %in% drops_all)]
-  
+
   return(clean)
 }
 
 # cleans the 2016 flight data that we use to test our model
 clean_data_vis <- function() {
   clean <- read.csv("data/flights2016_visible.csv")
-  
+
   for (c in replace) {
     clean[,c] <- car::recode(clean[,c], "c(NA)=0")
   }
-  
+
   clean <- clean[, !(names(clean) %in% drops_all)]
 
   return(clean)
 }
 
-# cleans the 2016 flight data that we predict on
-clean_data_guess <- function() {
-  clean <- read.csv("data/flights2016_guess.csv")
-  
-  clean <- clean[, !(names(clean) %in% drops_all)]
-  clean <- clean[, !(names(clean) %in% drop_guess)]
-  
-  return(clean)
+clean_data_2016 <- function() {
+  clean <- read.csv("data/flights2016.csv")
+
+  clean <- clean[, names(clean) %in% keep.2016]
+
 }
 
 # separate arrivals and departures, because we are only interesting in predicting delays on departures
@@ -69,11 +60,11 @@ separate <- function(dat = NA) {
   depart_ind <- which(dat$ORIGIN == "PIT")
   departures <- dat[depart_ind,]
   arrivals <- dat[-depart_ind,]
-  
+
   departures$ORIGIN <- NULL
   departures$ORIGIN_STATE_ABR <- NULL
   departures$X <- NULL
-  
+
   arrivals$DEST <- NULL
   arrivals$DEST_STATE_ABR <- NULL
   arrivals$X <- NULL
@@ -84,7 +75,7 @@ separate <- function(dat = NA) {
 # loads all cleaned data into session
 train <- clean_data_train()
 vis <- clean_data_vis()
-guess <- clean_data_guess()
+data.2016 <- clean_data_2016()
 
 
 # add a column of the time a flight arrives in PIT or leaves from PIT
@@ -98,15 +89,16 @@ pit_time <- function(dat) {
 
 train$CRS_PIT_TIME <- apply(train, 1, pit_time)
 vis$CRS_PIT_TIME <- apply(vis, 1, pit_time)
-guess$CRS_PIT_TIME <- apply(guess, 1, pit_time)
 
-clear_NA <- function(dat) {
-  for (c in colnames(dat)) {
-    dat[,c] <- car::recode(dat[,c], "c(NA)=0")
+clear_NA <- function(df) {
+  df$is.guess <- ifelse(is.na(df$DIVERTED), 1, 0)
+  
+  for (c in colnames(df)) {
+    df[,c] <- car::recode(df[,c], "c(NA)=0")
   }
-  return(dat)
+  return(df)
 }
 
 train <- clear_NA(train)
 vis <- clear_NA(vis)
-guess <- clear_NA(guess)
+data.2016 <- clear_NA(data.2016)
