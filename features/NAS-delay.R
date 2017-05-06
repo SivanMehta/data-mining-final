@@ -1,5 +1,7 @@
 
 # National Air System Delay
+# This is the number of NAS delays there have been on each day so far for each flight
+#### We may want to change this to within the last hour, or within the last X many flights
 
 # Change NA values to 0
 ordered$NAS_DELAY[is.na(ordered$NAS_DELAY)] <- 0
@@ -24,4 +26,4 @@ with.nas.delay <- function(df){
   return(df)
 }
 
-tom = with.nas.delay(ordered[c(1:500),])
+ordered = with.nas.delay(ordered)
