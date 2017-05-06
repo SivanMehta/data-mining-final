@@ -19,7 +19,7 @@ vis = vis[, !(names(vis) %in% takeout)]
 # Random Forest 
 library(randomForest)
 rf = randomForest(as.factor(DEP_DEL15)~., data = train, importance=TRUE)
-errTrain.rf = mean(train$DEP_DEL15 != rf$predicted) # .1725 Not good
+errTrain.rf = mean(train$DEP_DEL15 != rf$predicted) 
 
 testPreds = predict(rf, newdata = vis, type = "response")
 errTest.vis = mean(vis$DEP_DEL15 != testPreds)
@@ -45,6 +45,8 @@ importantVars = importantVars[order[importantVars[,3]]]
 
 rf = randomForest(DEP_DEL15 ~ dep.delay.ratio + weather.delay.ratio + arr.delay.ratio + NAS.delay.ratio, 
                   data = train, importance = TRUE)
-
+rf.predicted = ifelse(rf$predicted > 0.5, 1, 0)
+errTrain.rf = mean(train$DEP_DEL15 != rf.predicted) 
+rf.errTrain = predict(rf, newdata = train, type = "response")
 
 
