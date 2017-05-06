@@ -4,7 +4,7 @@ library(lubridate)
 add.delay <- function(df, indicator.fn, col.name) {
   df <- order.data.set(df)
   ind.name <- paste(col.name, ".ind", sep = "")
-  df[,ind.name] <- indicator.fn(df)
+  df[,ind.name] <- df[,ind.name] <- indicator.fn(df)
   delays = rep(-1, nrow(df))
   df$DAY_OF_YEAR <- yday(df$FL_DATE)
   days = c(1:365)
@@ -23,23 +23,14 @@ add.delay <- function(df, indicator.fn, col.name) {
     } else {
       delays[i] <- numVarDelay / numFlights
     }
-    
+
     # was this flight actually weather delayed?
     if (df[i, ind.name] == 1) {
       numVarDelay = numVarDelay + 1
     }
     numFlights = numFlights + 1
   }
-  
+
   df[,col.name] = delays
   return(df)
 }
-
-# example usage
-example <- train[1:5000, ]
-
-example.indicator <- function(df) {
-  return( ifelse(df$WEATHER_DELAY > 0 & (df$DEP_DEL15 > 0), 1, 0) )
-}
-
-example <- add.delay(example, example.indicator, "example")

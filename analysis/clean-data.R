@@ -5,8 +5,6 @@
 
 # call `source("clean-data.R")` to use
 
-rm(list = ls())
-
 library(car)
 
 # for model building, there are some variables which are blocked out in the prediction set
