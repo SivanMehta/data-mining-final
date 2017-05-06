@@ -1,10 +1,13 @@
 linear.models <- function(tr, te, fit) {
   predsTrain = fitted(fit)
-  predsTrain = ifelse(predsTrain > 0.5, 1, 0)
+  predsTrain = ifelse(predsTrain > 15, 1, 0)
   errTrain_lm = mean(predsTrain != train$DEP_DEL15)
 
   predslm = predict(fit, newdata = vis)
-  predslm = ifelse(predslm > 0.5, 1, 0)
+  
+  print(summary(predslm))
+  
+  predslm = ifelse(predslm > 15, 1, 0)
   errTest_lm = mean(predslm != vis$DEP_DEL15)
   return(c(errTrain_lm, errTest_lm))
 }
@@ -27,6 +30,6 @@ fit.lm.2 <- lm(DEP_DEL15 ~ weather.delay.ratio.ind, data = train)
 y.hat.2 <- linear.models(train, vis, fit.lm.2)
 y.hat.2[2]
 
-fit.lm.3 <- lm(DEP_DEL15 ~ weather.delay.ratio + index, data = train)
+fit.lm.3 <- lm(DEP_DELAY ~ weather.delay.ratio.ind, data = train)
 y.hat.3 <- linear.models(train, vis, fit.lm.3)
-y.hat.3[2]
+y.hat.2[2]
