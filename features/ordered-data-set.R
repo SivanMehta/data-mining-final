@@ -19,7 +19,7 @@ orderDataSet <- function(df){
   df$DAY_OF_YEAR = getDays(df$MONTH, df$DAY_OF_MONTH)
   day = 1
   data.at.day1 = df[which(df$DAY_OF_YEAR == day),] # data frame of only day 1, unordered
-  chrono.by.day1 = data.at.day1[order(data.at.day1$CRS_DEP_TIME),] # data frame of only day in time order
+  chrono.by.day1 = data.at.day1[order(data.at.day1$CRS_PIT_TIME),] # data frame of only day in time order
   newdf = chrono.by.day1
   days = c(2:365)
   for (day in days){

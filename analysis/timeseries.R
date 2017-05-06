@@ -43,6 +43,8 @@ delays_per_day <- summarize(by_date,
                             N_FLIGHTS = n(),
                             DEP_DELAY_TOT = sum(DEP_DEL15, na.rm = TRUE),
                             ARR_DELAY_TOT = sum(ARR_DEL15, na.rm = TRUE))
+
+
 delays_per_day$FL_DATE <- as.Date(delays_per_day$FL_DATE)
 
 # two week departures delays moving averages
