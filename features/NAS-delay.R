@@ -25,5 +25,3 @@ with.nas.delay <- function(df){
   df$NAS.delay.today = delays
   return(df)
 }
-
-ordered = with.nas.delay(ordered)
