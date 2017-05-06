@@ -15,13 +15,13 @@ linear.models <- function(train, test, fit){
 }
 
 #Only dep.delay.ratio.ind
-fit_lm = lm(DEP_DEL15 ~ weather.delay.ratio.ind, data = train)
+fit_lm = lm(DEP_DEL15 ~ , data = train)
 errors1 = linear.models(train, vis, fit_lm)
 
-fit_lm2 = lm(DEP_DEL15 ~ weather.delay.ratio.ind + DAY_OF_YEAR + INDEX, data = train)
+fit_lm2 = lm(DEP_DEL15 ~ weather.delay.ratio + DAY_OF_YEAR + index, data = train)
 errors2 = linear.models(train, vis, fit_lm2)
 
-fit_lm3 = lm(DEP_DEL15 ~ weather.delay.ratio.ind + arr.delay.ratio.ind + 
+fit_lm3 = lm(DEP_DEL15 ~ weather.delay.ratio + arr.delay.ratio + 
                DAY_OF_YEAR, data = train)
 errors3 = linear.models(train, vis, fit_lm3)
 
