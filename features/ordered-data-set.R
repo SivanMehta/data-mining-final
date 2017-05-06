@@ -2,7 +2,7 @@ library(dplyr)
 
 # Returns a dataset ordered chronologically by scheduled departure time
 # (can easily change to actual departure time if needed)
-orderDataSet <- function(df) {
+order.data.set <- function(df) {
   df$index <- 1:nrow(df)
   result <- arrange(df, MONTH, DAY_OF_MONTH, CRS_DEP_TIME)
   return(result)
