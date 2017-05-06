@@ -5,6 +5,8 @@
 
 # call `source("clean-data.R")` to use
 
+rm(list = ls())
+
 library(car)
 
 # for model building, there are some variables which are blocked out in the prediction set
@@ -99,3 +101,14 @@ pit_time <- function(dat) {
 train$CRS_PIT_TIME <- apply(train, 1, pit_time)
 vis$CRS_PIT_TIME <- apply(vis, 1, pit_time)
 guess$CRS_PIT_TIME <- apply(guess, 1, pit_time)
+
+clear_NA <- function(dat) {
+  for (c in colnames(dat)) {
+    dat[,c] <- recode(dat[,c], "c(NA)=0")
+  }
+  return(dat)
+}
+
+train <- clear_NA(train)
+vis <- clear_NA(vis)
+guess <- clear_NA(guess)
