@@ -8,30 +8,19 @@ library(neuralnet)
 source("analysis/clean-data.R")
 source("features/add-features.R")
 
+train <- add.features(train)
+vis <- add.features(vis)
+
 n <- c("dep.delay.ratio", "arr.delay.ratio", "weather.delay.ratio", "NAS.delay.ratio")
 f <- as.formula(paste("DEP_DEL15 ~", paste(n, collapse = " + ")))
 nn <- neuralnet(f, data = train, hidden = c(2), linear.output = FALSE)
 
-set.seed(500)
-library(MASS)
-data <- Boston
+plot(nn)
 
-index <- sample(1:nrow(data),round(0.75*nrow(data)))
-train <- data[index,]
-test <- data[-index,]
-lm.fit <- glm(medv~., data=train)
-summary(lm.fit)
-pr.lm <- predict(lm.fit,test)
-MSE.lm <- sum((pr.lm - test$medv)^2)/nrow(test)
+train_fit <- compute(nn, train[,n])
+train_fit <- ifelse(train_fit$net.result[,1] > 0.5, 1, 0)
+train_err <- mean(train_fit != train$DEP_DEL15)
 
-maxs <- apply(data, 2, max) 
-mins <- apply(data, 2, min)
-
-scaled <- as.data.frame(scale(data, center = mins, scale = maxs - mins))
-
-train_ <- scaled[index,]
-test_ <- scaled[-index,]
-
-n <- names(train_)
-f <- as.formula(paste("medv ~", paste(n[!n %in% "medv"], collapse = " + ")))
-nn <- neuralnet(f,data=train_,hidden=c(5,3),linear.output=T)
+nn_pred <- compute(nn, vis[,n])
+vis_fit <- ifelse(nn_pred$net.result[,1] > 0.5, 1, 0)
+vis_err <- mean(train_fit != vis$DEP_DEL15)
