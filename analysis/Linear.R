@@ -12,9 +12,9 @@ linear.models <- function(train, test, fit){
 }
 
 all.lm = lm(DEP_DEL15 ~ index + arr.delay.ratio + DAY_OF_YEAR + 
-            dep.delay.ratio + NAS.delay.ratio + MONTH, data = train)
+              dep.delay.ratio + NAS.delay.ratio + MONTH, data = train)
 errors.all = linear.models(train, vis, all.lm)
-  
+
 #Only dep.delay.ratio.ind
 fit_lm = lm(DEP_DEL15 ~ weather.delay.ratio, data = train)
 errors1 = linear.models(train, vis, fit_lm)
