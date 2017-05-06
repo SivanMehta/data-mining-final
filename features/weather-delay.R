@@ -1,6 +1,8 @@
 source("./analysis/clean-data.R")
 train <- read.csv("./data/flights2015.csv")
 
+# We may want to change this to within the last hour instead of the whole day
+
 # Works only with ordered data set
 
 # Change NA values to 0
