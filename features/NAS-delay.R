@@ -11,17 +11,27 @@ with.nas.delay <- function(df){
   delays = rep(-1, nrow(df))
   days = c(1:max(df$DAY_OF_YEAR))
   day = 1
+  numflights = 0
   numNASDelay = 0
-  for (i in 1:nrow(df)){ #for each flight, count the number of delays that day so far
+  for (i in 1:nrow(df)){ #for each flight, count the ratio of the NAS delays that day so far
     if (df$DAY_OF_YEAR[i] != day){
       day = day + 1
       numNASDelay = 0
+      numflights = 0
     }
-    delays[i] = numNASDelay #on this day how many flights have been delayed so far due to NAS?
+    if (numflights == 0){
+      delays[i] = 0
+    }
+    else{
+      delays[i] = numNASDelay/numflights #ratio of flights that have been delayed so far due to NAS?
+    }
     if (df$NAS_DELAY_IND[i] == 1){ #was this flight NAS delayed?
       numNASDelay = numNASDelay + 1
     }
+    numflights = numflights + 1
   }
-  df$NAS.delay.today = delays
+  df$NAS.delay.ratio = delays
   return(df)
 }
+
+ordered = with.nas.delay(ordered[c(1:500),])

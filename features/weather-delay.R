@@ -13,19 +13,27 @@ with.weather.delay <- function(df){
   delays = rep(-1, nrow(df))
   days = c(1:max(df$DAY_OF_YEAR))
   day = 1
+  numflights = 0
   numWeatherDelay = 0
-  for (i in 1:nrow(df)){ #for each flight, count the number of delays that day so far
+  for (i in 1:nrow(df)){ #for each flight, count the ratio of the NAS delays that day so far
     if (df$DAY_OF_YEAR[i] != day){
       day = day + 1
       numWeatherDelay = 0
+      numflights = 0
     }
-    delays[i] = numWeatherDelay #on this day how many flights have been delayed so far?
-    if (df$WEATHER_DELAY_IND[i] == 1){ #was this flight actually weather delayed?
+    if (numflights == 0){
+      delays[i] = 0
+    }
+    else{
+      delays[i] = numWeatherDelay/numflights #ratio of flights that have been delayed so far due to NAS?
+    }
+    if (df$WEATHER_DELAY_IND[i] == 1){ #was this flight NAS delayed?
       numWeatherDelay = numWeatherDelay + 1
     }
+    numflights = numflights + 1
   }
-  df$weather.delay.today = delays
+  df$weather.delay.ratio = delays
   return(df)
 }
 
-tom = with.weather.delay(ordered)
+tom = with.weather.delay(ordered[c(1:500),])
