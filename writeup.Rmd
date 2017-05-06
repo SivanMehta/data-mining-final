@@ -39,17 +39,20 @@ delays_per_day <- summarize(by_date,
 
 
 delays_per_day$FL_DATE <- as.Date(delays_per_day$FL_DATE)
+delays_per_day$DEP_AVG_7 <-get_moving_averages(delays_per_day$DEP_DELAY_TOT, 7)
+delays_per_day$DEP_AVG_30 <-get_moving_averages(delays_per_day$DEP_DELAY_TOT, 30)
 
 # two week departures delays moving averages
-delays_per_day$DEP_AVG_7 <- get_moving_averages(delays_per_day$DEP_DELAY_TOT, 7)
-delays_per_day$DEP_AVG_30 <- get_moving_averages(delays_per_day$DEP_DELAY_TOT, 30)
+ggplot(delays_per_day) +
+  scale_x_date() +
+  geom_line(aes(x = FL_DATE, y = DEP_DELAY_TOT), alpha = .1) +
   geom_line(aes(x = FL_DATE, y = DEP_AVG_7), color = "red", alpha = .5) +
   geom_line(aes(x = FL_DATE, y = DEP_AVG_30), color = "blue", size = 1) +
   labs(x = "Date of Flight", y = "Number of Delays", 
        title = "Delays per day, with weekly average in red, monthly average in blue")
 ```
 
-Here we can see some clear seasonal effects surrounding delays when looking at the moving average. While there is *a lot* of volatility as seen in the red weekly average, we can relatively smmooth this with the blue monthly average. This tells us we can gain some insight with the date information. Next, we can try clustering to see if they flights break down into meaningful groups. This perhaps could give us some insight on the general types of flights we may see.
+Here we can see some clear seasonal effects surrounding delays when looking at the moving average. While there is *a lot* of volatility as seen in the red weekly average, we can relatively smooth this with the blue monthly average. This tells us we can gain some insight with the date information. Next, we can try clustering to see if they flights break down into meaningful groups. This perhaps could give us some insight on the general types of flights we may see.
 
 ```{r, warning = FALSE}
 library(protoclust)
