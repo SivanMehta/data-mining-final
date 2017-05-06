@@ -30,7 +30,7 @@ In this report, we will focus on *departing* flights, looking to predict whether
 
 First, we'll examine delays on each day, in order to reduce *some* of the noise, we'll also plot a 30-day moving average of delays
 
-```{r}
+```{r, warning = FALSE}
 by_date <- group_by(train, FL_DATE)
 delays_per_day <- summarize(by_date,
                             N_FLIGHTS = n(),
@@ -44,10 +44,10 @@ delays_per_day$FL_DATE <- as.Date(delays_per_day$FL_DATE)
 dep_moving_average_14 <- get_moving_averages(delays_per_day$DEP_DELAY_TOT, 14)
 delays_per_day$DEP_AVG_14 <- dep_moving_average_14
 
-ggplot(delays_per_day) + 
-  scale_x_date() + 
-  geom_line(aes(x = FL_DATE, y = DEP_DELAY_TOT), alpha = .2) + 
-  geom_line(aes(x = FL_DATE, y = DEP_AVG_14)) + 
+ggplot(delays_per_day) +
+  scale_x_date() +
+  geom_line(aes(x = FL_DATE, y = DEP_DELAY_TOT), alpha = .2) +
+  geom_line(aes(x = FL_DATE, y = DEP_AVG_14)) +
   labs(x = "Date of Flight", y = "Number of Delays", title = "Delays per day, with a 2-week moving average")
 ```
 
