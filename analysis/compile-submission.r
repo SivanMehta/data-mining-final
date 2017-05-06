@@ -13,7 +13,7 @@ predictions <- ifelse(predict(fit.lm, newdata = guesses.2016) > .5, 1, 0)
 
 delay.guesses <- predictions
 performance.guess <- y.hat.2[2]
-team.name <- "Naive Dazed and Confused"
+team.name <- "http://easyscienceforkids.com/all-about-the-empty-pot-a-chinese-folk-story-about-honesty/"
 
 save(list=c("delay.guesses","performance.guess","team.name"), file="stat462final.RData")
 
