@@ -5,7 +5,7 @@
 
 # call `source("clean-data.R")` to use
 
-library(car)
+library(dplyr)
 
 # for model building, there are some variables which are blocked out in the prediction set
 # so we drop them
@@ -32,7 +32,7 @@ clean_data_train <- function() {
   clean <- read.csv("data/flights2015.csv")
 
   for (c in replace) {
-    clean[,c] <- recode(clean[,c], "c(NA)=0")
+    clean[,c] <- car::recode(clean[,c], "c(NA)=0")
   }
   clean <- clean[, !(names(clean) %in% drops_all)]
   
@@ -44,7 +44,7 @@ clean_data_vis <- function() {
   clean <- read.csv("data/flights2016_visible.csv")
   
   for (c in replace) {
-    clean[,c] <- recode(clean[,c], "c(NA)=0")
+    clean[,c] <- car::recode(clean[,c], "c(NA)=0")
   }
   
   clean <- clean[, !(names(clean) %in% drops_all)]
@@ -102,7 +102,7 @@ guess$CRS_PIT_TIME <- apply(guess, 1, pit_time)
 
 clear_NA <- function(dat) {
   for (c in colnames(dat)) {
-    dat[,c] <- recode(dat[,c], "c(NA)=0")
+    dat[,c] <- car::recode(dat[,c], "c(NA)=0")
   }
   return(dat)
 }
