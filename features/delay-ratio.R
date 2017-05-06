@@ -1,62 +1,53 @@
-# 36-462: Data Mining Final
-# 04/16/17
-# R script for generating features
-# Data documentation: https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236
-
 source("analysis/clean-data.R")
+source("./features/ordered-data-set.R")
+library(lubridate)
 
 # calculate the number of flights that have been delayed that day, 
 # up until that time for visible data (2015 and 2016_visible)
-delay_ratio_vis <- function(dat) {
-  ncol <- length(levels(dat$UNIQUE_CARRIER)) + 2
-  features <- data.frame(matrix(0, nrow = nrow(dat), ncol = ncol))
-  features <- cbind(features, dat$FL_DATE)
-  features <- cbind(features, dat$CRS_PIT_TIME)
-  carriers <- levels(dat$UNIQUE_CARRIER)
-  dat$DEP_DEL15 <- recode(dat$DEP_DEL15, "c(NA)=0")
-  dat$ARR_DEL15 <- recode(dat$ARR_DEL15, "c(NA)=0")
+with.dep.arr.delay <- function(df) {
+  df <- orderDataSet(df)
   
-  dates <- levels(dat$FL_DATE)
-  for (date in dates) {
-    day_ind <- which(dat$FL_DATE == date)
-    day_ind <- day_ind[order(dat$CRS_PIT_TIME[day_ind])]
-    day <- dat[day_ind,]
-    
-    for (i in 1:length(day_ind)) {
-      day_dat <- day[1:i,]
-      # ie, how is PIT performing at any given time
-      dep_inds <- which(day_dat$ORIGIN == "PIT")
-      if (length(dep_inds) == 0) {
-        dep_delay <- 0
-      } else {
-        dep_delay <- sum(day_dat$DEP_DEL15[dep_inds]) / length(dep_inds) # leaving PIT
-      }
-      features[day_ind[i], 1] <- dep_delay
-      
-      arr_inds <- which(day_dat$DEST == "PIT")
-      if (length(arr_inds) == 0) {
-        arr_delay <- 0
-      } else {
-        arr_delay <- sum(day_dat$ARR_DEL15[arr_inds]) / length(arr_inds) # arriving to PIT 
-      }
-      features[day_ind[i], 2] <- arr_delay
-      
-      # how is a carrier performing at any given time
-      for (c in 1:length(carriers)) {
-        carrier <- carriers[c]
-        car_inds <- day_dat[which(day_dat$UNIQUE_CARRIER == carrier),]
-        if (nrow(car_inds) == 0) {
-          car_delay <- 0
-          } else {
-            car_delay <- sum(car_inds$DEP_DEL15 | car_inds$ARR_DEL15) / nrow(car_inds)
-          }
-        features[day_ind[i], (2+c)] <- car_delay
-      }
+  df$dep.delay.ind <- ifelse((df$ORIGIN == "PIT") & (df$DEP_DEL15) > 0, 1, 0)
+  df$arr.delay.ind <- ifelse((df$DEST == "PIT") & (df$ARR_DEL15) > 0, 1, 0)
+  
+  df$dep.delay.ind <- ifelse(is.na(df$dep.delay.ind), 0, df$dep.delay.ind)
+  df$arr.delay.ind <- ifelse(is.na(df$arr.delay.ind), 0, df$arr.delay.ind)
+  
+  delays.dep = rep(-1, nrow(df))
+  delays.arr = rep(-1, nrow(df))
+  df$DAY_OF_YEAR <- yday(df$FL_DATE)
+  days = c(1:365)
+  day = 1
+  numFlights = 0
+  
+  numDEPDelay = 0
+  numARRDelay = 0
+  for (i in 1:nrow(df)){ #for each flight, count the number of delays.dep that day so far
+    if (df$DAY_OF_YEAR[i] != day){
+      day = day + 1
+      numDEPDelay = 0
+      numARRDelay = 0
+      numFlights = 0
     }
+    if (numFlights == 0) {
+      delays.dep[i] <- 0
+      delays.arr[i] <- 0
+    } else {
+      delays.dep[i] <- numDEPDelay / numFlights
+      delays.arr[i] <- numARRDelay / numFlights
+    }
+    
+    # was this flight actually delayed?
+    if (df$dep.delay.ind[i] == 1) {
+      numDEPDelay = numDEPDelay + 1
+    }
+    if (df$arr.delay.ind[i] == 1) {
+      numARRDelay = numARRDelay + 1
+    }
+    numFlights = numFlights + 1
   }
-  colnames(features) <- c(c("DEP_DELAY_RATIO", "ARR_DELAY_RATIO"), 
-                          paste(carriers, "DELAY_RATIO", sep = "_"))
-  return(features) 
+  
+  df$dep.delay.today = delays.dep
+  df$arr.delay.today = delays.arr
+  return(df)
 }
-
-try0 <- delay_ratio_vis(vis)
