@@ -12,9 +12,13 @@ library(glmnet)
 
 ### Loading the data and cleaning it
 ```{r}
-source("./analysis/clean-data.R")
+source("analysis/clean-data.R")
+source("./features/ordered-data-set.R")
+source("./features/NAS-delay.R")
+source("./features/NAS-delay.R")
 base_rate = mean(train$DEP_DEL15)
-
+x.train = train[,-(which(colnames(train) == "DEP_DEL15"))]
+y.train = train[,which(colnames(train) == "DEP_DEL15")]
 ```
 
 ### Linear Model
@@ -26,6 +30,7 @@ errTest_lm = mean((predslm - test[,1])^2) #.1320 < base rate!
 
 # Lasso
 ```{r}
+library(mgcv)
 fit_lasso = cv.glmnet(as.matrix(x.train), y.train)
 
 predsLasso_train = predict(fit_lasso, newx = as.matrix(x.train), type = "response", s = fit_lasso$lambda.1se)
@@ -47,7 +52,9 @@ errTest_glm = mean((guess_test - y.test)^2) # .1319
 #Fit a Random Forest
 ```{r}
 library(randomForest)
-rf = randomForest(as.factor(DEP_DEL15)~.,data = train, importance=TRUE)
+natrain = na.omit(train)
+natrain = natrain[,-which(colnames = )]
+rf = randomForest(as.factor(DEP_DEL15)~.,data = natrain, importance=TRUE)
 errTrain.rf = mean(y.train == rf$predicted) # .1725 Not good
 if (errTrain.rf > .5){errTrain.rf = 1 - errTrain.rf}
 testPreds = predict(rf, newdata = test, type = "response")

@@ -2,7 +2,7 @@
 title: "Final Project - 36-462: Data Mining"
 author: "Sivan Mehta, Mary St. John, and Graceanne Wong"
 date: "5/12/2017"
-output: 
+output:
   pdf_document:
     fig_height: 4
 ---
@@ -11,8 +11,9 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 # import data sets and any libraries we might need
 source("./analysis/clean-data.R")
-source("./analysis/load-data.R")
+source("./analysis/timeseries.R")
 library(ggplot2)
+library(dplyr)
 ```
 
 # Introduction
@@ -27,43 +28,35 @@ In this report, we will focus on *departing* flights, looking to predict whether
 
 # EDA and unsupervised analysis
 
-First, we'll look to see if any particular carriers or regions are particularly egregious in delays.
+First, we'll examine delays on each day, in order to reduce *some* of the noise, we'll also plot a some moving averages of delays.
 
-```{r, message = FALSE, warning = FALSE}
-library(gridExtra)
-library(dplyr)
-sample.data <- na.omit(sample_n(train, nrow(train) * .1))
+```{r, warning = FALSE}
+by_date <- group_by(train, FL_DATE)
+delays_per_day <- summarize(by_date,
+                            N_FLIGHTS = n(),
+                            DEP_DELAY_TOT = sum(DEP_DEL15, na.rm = TRUE),
+                            ARR_DELAY_TOT = sum(ARR_DEL15, na.rm = TRUE))
 
-# Is one carrier more delayed than the others?
-carrier.delays <- ggplot(train) +
-  aes(alpha = .5) + 
-  geom_density(aes(x = DEP_DELAY, color = UNIQUE_CARRIER)) +
-  
-  guides(colour = FALSE) + 
-  scale_x_continuous(limits = c(-20, 50)) +
-  labs(x = "Departure Delay in Minutes") +
-  ggtitle("Departure Delays by Carrier")
 
-# What about a particular airport?
-origin.delays <- ggplot(train) +
-  aes(alpha = .5) + 
-  geom_density(aes(x = DEP_DELAY, color = as.factor(ORIGIN_WAC))) +
-  
-  guides(colour = FALSE) + 
-  scale_x_continuous(limits = c(-20, 50)) +
-  labs(x = "Departure Delay in Minutes") +
-  ggtitle("Departure Delays by Origin Region")
+delays_per_day$FL_DATE <- as.Date(delays_per_day$FL_DATE)
+delays_per_day$DEP_AVG_7 <-get_moving_averages(delays_per_day$DEP_DELAY_TOT, 7)
+delays_per_day$DEP_AVG_30 <-get_moving_averages(delays_per_day$DEP_DELAY_TOT, 30)
 
-grid.arrange(carrier.delays, origin.delays)
+# two week departures delays moving averages
+ggplot(delays_per_day) +
+  scale_x_date() +
+  geom_line(aes(x = FL_DATE, y = DEP_DELAY_TOT), alpha = .1) +
+  geom_line(aes(x = FL_DATE, y = DEP_AVG_7), color = "red", alpha = .5) +
+  geom_line(aes(x = FL_DATE, y = DEP_AVG_30), color = "blue", size = 1) +
+  labs(x = "Date of Flight", y = "Number of Delays", 
+       title = "Delays per day, with weekly average in red, monthly average in blue")
 ```
 
-While it is hard to glean much structure from this, we do see that there is one region with a noticeable bump in later delays. That happens to be World Area Code (or `ORIGIN_WAC` in the dataset) 54, which corresponds to flights leaving from Tennesee.
-
-Next, we can try clustering to see if they flights break down into meaningful groups. This perhaps could give us some insight on the general types of flights we may see.
+Here we can see some clear seasonal effects surrounding delays when looking at the moving average. While there is *a lot* of volatility as seen in the red weekly average, we can relatively smooth this with the blue monthly average. This tells us we can gain some insight with the date information. Next, we can try clustering to see if they flights break down into meaningful groups. This perhaps could give us some insight on the general types of flights we may see.
 
 ```{r, warning = FALSE}
 library(protoclust)
-sample.data <- sample_n(test, nrow(test) * .1)
+sample.data <- sample_n(vis, nrow(vis) * .1)
 flights.dist <- dist(sample.data)
 
 tree.com <- hclust(flights.dist, method = "complete")

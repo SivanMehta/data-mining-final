@@ -21,13 +21,13 @@ add.features <- function(df) {
   df <- add.delay(df, weather.indicator, "weather.delay.ratio")
 
   # nas delays
-  df <- add.delay(df, NAS.indicator, "NAS.delay.ratio")
-
-  # departure delay ratio
-  df <- add.delay(df, dep.indicator, "dep.delay.ratio")
-
-  # arrival delay ratio
-  df <- add.delay(df, arr.indicator, "arr.delay.ratio")
+  # df <- add.delay(df, NAS.indicator, "NAS.delay.ratio")
+  #
+  # # departure delay ratio
+  # df <- add.delay(df, dep.indicator, "dep.delay.ratio")
+  #
+  # # arrival delay ratio
+  # df <- add.delay(df, arr.indicator, "arr.delay.ratio")
 
   return(df)
 }
@@ -35,7 +35,7 @@ add.features <- function(df) {
 # example usage
 # source("./analysis/clean-data.R")
 # example <- train[1:5000, ]
-# 
+#
 # example <- add.features(example)
-# 
+#
 # plot(example$arr.delay.ratio)
