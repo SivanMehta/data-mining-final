@@ -12,31 +12,9 @@ library(glmnet)
 
 ### Loading the data and cleaning it
 ```{r}
-flights2015_clean_s <- read.csv("~/_CMU/Curr Sem 17 Spring/Data Mining/Final/data/flights2015_clean_s.csv")
-getDays = function(months, days){
-  monthDays = c(31,28,31,30,31,30,31,31,30,31,30,31)
-  cumdays <<- rep(0, length(days))
-  for (i in 1:length(months)){
-    if (months[i] == 0) {cumdays[i] <<- days[i]}
-    else{
-      cumdays[i] = sum(monthDays[1:(months[i]-1)])+days[i]
-    }
-  }
-  return(cumdays)
-}
+source("./analysis/clean-data.R")
+base_rate = mean(train$DEP_DEL15)
 
-flights2015_clean_s$DAY = getDays(flights2015_clean_s$MONTH, flights2015_clean_s$DAY_OF_MONTH)
-flights15 = cbind("DEP_DEL15" = response, flights2015_cleaner)
-naflights15 = na.omit(flights15)[,-2]
-naresponse = as.double(naflights15[,1])
-factors = c("MONTH, DAY_OF_WEEK")
-# This does not work
-for (i in factors){
-  idx = which(names(flights15) == factors[i])
-  naflights15[,idx] = as.factor(flights15[,idx])
-}
-
-base_rate = mean(naresponse)
 ```
 
 ### Linear Model
