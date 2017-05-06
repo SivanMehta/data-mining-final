@@ -2,7 +2,6 @@
 # Models
 source("./analysis/clean-data.R")
 source("./features/add-features.R")
-example <- train[1:5000, ]
  
 train = add.features(train)
 vis = add.features(vis)
@@ -42,6 +41,10 @@ errTest.vis = mean(vis.rf$DEP_DEL15 != rf$predicted)
 
 importantVars = importantVars[order[importantVars[,3]]]
 
+#Try 2
+
+rf = randomForest(DEP_DEL15 ~ dep.delay.ratio + weather.delay.ratio + arr.delay.ratio + NAS.delay.ratio, 
+                  data = train, importance = TRUE)
 
 
 
