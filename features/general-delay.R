@@ -34,3 +34,23 @@ add.delay <- function(df, indicator.fn, col.name) {
   df[,col.name] = delays
   return(df)
 }
+
+add.plane.flights <- function(df) {
+  # create lookup table
+  flights.that.day <- df %>%
+    group_by(FL_DATE, TAIL_NUM) %>%
+    summarise(count = n())
+
+  lookup.flight.count <- function(obs) {
+    return(
+      filter(flights.that.day,
+           FL_DATE == obs["FL_DATE"],
+           TAIL_NUM == obs["TAIL_NUM"]
+           )[1,]$count
+    )
+  }
+
+  df$additional.flights <- apply(df, 1, lookup.flight.count)
+
+  return(df)
+}
