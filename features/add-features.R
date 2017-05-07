@@ -22,12 +22,12 @@ add.features <- function(df) {
 
   #nas delays
   df <- add.delay(df, NAS.indicator, "NAS.delay.ratio")
-
+  
   # departure delay ratio
-  #df <- add.delay(df, dep.indicator, "dep.delay.ratio")
+  df <- add.delay(df, dep.indicator, "dep.delay.ratio")
 
   # arrival delay ratio
-  #df <- add.delay(df, arr.indicator, "arr.delay.ratio")
+  df <- add.delay(df, arr.indicator, "arr.delay.ratio")
 
   derivative <- rep(0, nrow(df))
   for (i in 5:nrow(df)) {

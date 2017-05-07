@@ -4,7 +4,7 @@ library(lubridate)
 add.delay <- function(df, indicator.fn, col.name) {
   df <- order.data.set(df)
   ind.name <- paste(col.name, ".ind", sep = "")
-  df[,ind.name] <- df[,ind.name] <- indicator.fn(df)
+  df[,ind.name] <- indicator.fn(df)
   delays = rep(-1, nrow(df))
   df$DAY_OF_YEAR <- yday(df$FL_DATE)
   days = c(1:365)

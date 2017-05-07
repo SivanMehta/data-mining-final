@@ -9,11 +9,12 @@ source("./analysis/mixmodels.R")
 
 guesses.2016 <- data.2016[which(data.2016$is.guess == 1), ]
 
-n <- c("NAS.delay.ratio.ind", "weather.delay.ratio.ind")
+n <- c("arr.delay.ratio.ind", "dep.delay.ratio.ind")
+vis_lcm <- vis[,n] + 1
 train_lcm <- train[,n] + 1
 test_lcm <- guesses.2016[,n] + 1
 
-lcm <- poLCA(cbind(NAS.delay.ratio.ind, weather.delay.ratio.ind) ~ 1,
+lcm <- poLCA(cbind(arr.delay.ratio.ind, dep.delay.ratio.ind) ~ 1,
              train_lcm, nclass = 2, verbose = FALSE)
 
 predictions <- ifelse(dmultbinarymix(test_lcm, lcm) > 0.5, 0, 1)
