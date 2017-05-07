@@ -48,7 +48,7 @@ ggplot(delays_per_day) +
   geom_line(aes(x = FL_DATE, y = DEP_DELAY_TOT), alpha = .1) +
   geom_line(aes(x = FL_DATE, y = DEP_AVG_7), color = "red", alpha = .5) +
   geom_line(aes(x = FL_DATE, y = DEP_AVG_30), color = "blue", size = 1) +
-  labs(x = "Date of Flight", y = "Number of Delays", 
+  labs(x = "Date of Flight", y = "Number of Delays",
        title = "Delays per day, with weekly average in red, monthly average in blue")
 ```
 
@@ -91,3 +91,13 @@ Generally, these are doing pretty poorly, garnering misclassification rates of n
 - You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described.
 - What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it?
 - If there were tuning parameters, how did you pick their values? Can you explain anything about the nature of the relationship between the predictors in your model and the predictions themselves?
+- Explain what all of the indicator variables
+    - how were they formed
+    - why we thought they would be useful
+- Explain each methodology's approach
+    - linear model / glm / naive bayes
+    - random forest
+    - mixture model
+    - how we used each of the variables
+- why do we think we failed?
+- Desired changes to problem that would have helped us
