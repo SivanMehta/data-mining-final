@@ -1,15 +1,22 @@
 source("./analysis/clean-data.R")
 source("./features/add-features.R")
-source("./analysis/Linear.R")
 
 data.2016 <- add.features(data.2016)
+train <- add.features(train)
+vis <- add.features(vis)
 
-# based on our analysis, this is the model with the smallest test error
-fit.lm <- lm(DEP_DEL15 ~ weather.delay.ratio, data = data.2016)
+source("./analysis/mixmodels.R")
 
 guesses.2016 <- data.2016[which(data.2016$is.guess == 1), ]
 
-predictions <- ifelse(predict(fit.lm, newdata = guesses.2016) > .5, 1, 0)
+n <- c("NAS.delay.ratio.ind", "weather.delay.ratio.ind")
+train_lcm <- train[,n] + 1
+test_lcm <- guesses.2016[,n] + 1
+
+lcm <- poLCA(cbind(NAS.delay.ratio.ind, weather.delay.ratio.ind) ~ 1,
+             train_lcm, nclass = 2, verbose = FALSE)
+
+predictions <- ifelse(dmultbinarymix(test_lcm, lcm) > 0.5, 0, 1)
 
 delay.guesses <- predictions
 performance.guess <- y.hat.2[2]
@@ -22,7 +29,7 @@ check_submission_format = function(x){
   print(sprintf("Your team name is %s", team.name))
   print(sprintf("Your submission has %d guesses and is supposed to have 871", length(delay.guesses)))
   print(sprintf("You guessed %d delayed flights and %d non-delayed flights",sum(delay.guesses==1), sum(delay.guesses==0)))
-  print(sprintf("You expect a misclassification error of %f", performance.guess))  
+  print(sprintf("You expect a misclassification error of %f", performance.guess))
 }
 
 
