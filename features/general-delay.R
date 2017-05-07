@@ -9,14 +9,14 @@ add.delay <- function(df, indicator.fn, col.name) {
   df$DAY_OF_YEAR <- yday(df$FL_DATE)
   days = c(1:365)
   day = 1
-  numFlights = 0
+  numFlights = sum(df$DAY_OF_YEAR == 1) # 0
   numVarDelay = 0
   # for each flight, count the number of delays that day so far
-  for (i in 1:nrow(df)){
+  for (i in 2:nrow(df)){ # for (i in 1:nrow(df)){
     if (df$DAY_OF_YEAR[i] != day) {
       day = day + 1
       numVarDelay = 0
-      numFlights = 0
+      numFlights = sum(df$DAY_OF_YEAR == day)  # 0
     }
     if (numFlights == 0) {
       delays[i] <- 0
@@ -28,7 +28,7 @@ add.delay <- function(df, indicator.fn, col.name) {
     if (df[i, ind.name] == 1) {
       numVarDelay = numVarDelay + 1
     }
-    numFlights = numFlights + 1
+    # numFlights = numFlights + 1
   }
 
   df[,col.name] = delays
