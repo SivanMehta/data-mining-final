@@ -20,8 +20,8 @@ add.features <- function(df) {
   # weather delays
   df <- add.delay(df, weather.indicator, "weather.delay.ratio")
 
-  # nas delays
-  # df <- add.delay(df, NAS.indicator, "NAS.delay.ratio")
+  #nas delays
+  df <- add.delay(df, NAS.indicator, "NAS.delay.ratio")
   #
   # # departure delay ratio
   # df <- add.delay(df, dep.indicator, "dep.delay.ratio")

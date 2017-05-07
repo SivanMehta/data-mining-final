@@ -11,27 +11,51 @@ source("features/add-features.R")
 train <- add.features(train)
 vis <- add.features(vis)
 
-n <- c("dep.delay.ratio.ind", "arr.delay.ratio.ind", 
-       "weather.delay.ratio.ind", "NAS.delay.ratio.ind")
+# INPUTS
+# x = a dataframe
+# model = an object fit by poLCA
+# offset = a number to recode a binary variable
+# log = if the probabilities should be on the logarithmic scale
+# OUTPUTS
+# returns 
+dmultbinarymix <- function(x, model, offset=1, log=FALSE) {
+  x <- x-offset # this recodes so that it's actually binary
+  # remakes the probabilities matrices from the poLCA object
+  prob.matrix <- sapply(model$probs, function(mat) { mat[,2] }) 
+  # just in case any matrices are empty
+  if (is.null(dim(prob.matrix))) {
+    prob.matrix <- array(prob.matrix, dim=c(1,length(prob.matrix)))
+  }
+  
+  class.probs <- model$P
+  # this function returns the product of the binomial probabilities for each variable
+  # and weights that product by the probability of being in the conditioned class
+  class.cond.prob <- function(x,c) {
+    class.probs[c]*prod((prob.matrix[c,]^x)*((1-prob.matrix[c,])^(1-x)))
+  }
+  # this function sums the weighted probabilities for each class
+  one.point.prob <- function(x) {
+    summands <- sapply(1:length(class.probs), class.cond.prob, x=x)
+    return(sum(summands))
+  }
+  probs <- apply(x, 1, one.point.prob)
+  if (log) {
+    return(log(probs))
+  } else {
+    return(probs)
+  }
+}
 
+
+n <- c("NAS.delay.ratio.ind", "weather.delay.ratio.ind")
 train_lcm <- train[,n] + 1
-lcm <- poLCA(cbind(dep.delay.ratio.ind, arr.delay.ratio.ind, 
-                   weather.delay.ratio.ind, NAS.delay.ratio.ind) ~ 1, 
+vis_lcm <- vis[,n] + 1
+
+lcm <- poLCA(cbind(NAS.delay.ratio.ind, weather.delay.ratio.ind) ~ 1, 
              train_lcm, nclass = 2, verbose = FALSE)
 
-library(glmnet)
+train_pred <- ifelse(dmultbinarymix(train_lcm, lcm) > 0.5, 0, 1)
+vis_pred <- ifelse(dmultbinarymix(vis_lcm, lcm) > 0.5, 0, 1)
 
-fit <- glm(DEP_DEL15 ~ NAS.delay.ratio, data = train, family = "binomial")
-mean(train$DEP_DEL15 != ifelse(fit$fitted.values > 0.9, 1, 0))
-mean(train$DEP_DEL15 != 0)
-summary(fit$fitted.values)
-
-
-fit1 <- lm(DEP_DELAY ~ weather.delay.ratio, data = train)
-fitted_val <- ifelse(fitted(fit1) >= 50, 1, 0)
-mean(train$DEP_DEL15 != fitted_val)
-
-fitted_val = fitted(fit1)
-fitted_val = fitted_val[which(train$DEP_DEL15 == 1 & fitted_val > 7.2)]
-summary(fitted_val)
-table(train$DEP_DEL15[which(round(fitted_val, 3) == 7.137)])
+train_err <- mean(train_pred != train$DEP_DEL15)
+vis_err <- mean(vis_pred != vis$DEP_DEL15)
