@@ -13,7 +13,7 @@ vis <- add.features(vis)
 
 n <- c("dep.delay.ratio", "arr.delay.ratio", "weather.delay.ratio", "NAS.delay.ratio")
 f <- as.formula(paste("DEP_DEL15 ~", paste(n, collapse = " + ")))
-nn <- neuralnet(f, data = train, hidden = c(2), linear.output = FALSE)
+nn <- neuralnet(f, data = train, hidden = c(3, 2), linear.output = FALSE)
 
 plot(nn)
 
