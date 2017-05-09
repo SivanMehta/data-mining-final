@@ -15,6 +15,7 @@ drops_all <- c("ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET
            "FLIGHTS", "ARR_DELAY")
 
 keep.2016 <- c("DEP_DEL15", "WEATHER_DELAY", "DIVERTED",
+              "NAS_DELAY", "ORIGIN", "DEST", "ARR_DEL15",
               "MONTH", "DAY_OF_MONTH", "CRS_DEP_TIME", "FL_DATE")
 
 replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY",
@@ -92,7 +93,7 @@ vis$CRS_PIT_TIME <- apply(vis, 1, pit_time)
 
 clear_NA <- function(df) {
   df$is.guess <- ifelse(is.na(df$DIVERTED), 1, 0)
-  
+
   for (c in colnames(df)) {
     df[,c] <- car::recode(df[,c], "c(NA)=0")
   }
