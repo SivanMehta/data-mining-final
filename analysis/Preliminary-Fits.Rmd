@@ -8,6 +8,21 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(glmnet)
+
+source("./analysis/clean-data.R")
+source("./features/add-features.R")
+train = add.features(train)
+vis = add.features(vis)
+
+takeout = c("FL_DATE", "DEP_TIME", "WHEELS_OFF", "WHEELS_ON", "TAXI_OUT", "TAXI_IN", "TAIL_NUM", "AIRLINE_ID", 
+            "FL_NUM", "DEP_DELAY", "DEP_DELAY_GROUP", "DEP_DELAY_NEW", "CANCELLED", "CANCELLATION_CODE", 
+            "ACTUAL_ELAPSED_TIME", "AIR_TIME", "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "ARR_TIME", 
+            "ARR_DELAY_NEW", "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "ARR_DEL15",
+            "ARR_DELAY_GROUP", "DIVERTED", "UNIQUE_CARRIER", "dep.delay.ratio.ind", "arr.delay.ratio.ind",
+            "NAS.delay.ratio.ind")
+train = train[, !(names(train) %in% takeout)]
+vis = vis[, !(names(vis) %in% takeout)]
+
 ```
 
 ### Loading the data and cleaning it
@@ -31,7 +46,9 @@ errTest_lm = mean((predslm - test[,1])^2) #.1320 < base rate!
 # Lasso
 ```{r}
 library(mgcv)
-fit_lasso = cv.glmnet(as.matrix(x.train), y.train)
+nax.train = na.omit(x.train)
+nay.train = na.omit(y.train)
+fit_lasso = cv.glmnet(as.matrix(nax.train), nay.train)
 
 predsLasso_train = predict(fit_lasso, newx = as.matrix(x.train), type = "response", s = fit_lasso$lambda.1se)
 predsLasso_test = predict(fit_lasso, newx = as.matrix(x.test), type = "response", s = fit_lasso$lambda.1se) 
