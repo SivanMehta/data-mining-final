@@ -9,3 +9,11 @@ model.table$training.error <- 1
 model.table$test.error <- 1
 model.table$guess.delayed <- 1
 
+to.percent <- function(error) {
+  paste(round(error * 100, 2), "%", sep = "")
+}
+
+# base rate
+model.table[1, 2] <- to.percent(length(which(train$DEP_DEL15 > 0)) / nrow(train))
+model.table[1, 3] <- to.percent(length(which(vis$DEP_DEL15 > 0)) / nrow(vis))
+model.table[1, 4] <- "NA"
