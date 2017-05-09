@@ -7,11 +7,10 @@ vis <- add.features(vis)
 
 guesses.2016 <- data.2016[which(data.2016$is.guess == 1), ]
 
-testPreds = predict(rf.ind, newdata = guesses.2016, type = "response")
-predictions = ifelse(testPreds > 0.5, 1, 0)
+testPreds = predict(rf, newdata = guesses.2016, type = "response")
 
-delay.guesses <- predictions
-performance.guess <- .1
+delay.guesses <- testPreds
+performance.guess <- .0916
 team.name <- "http://easyscienceforkids.com/all-about-the-empty-pot-a-chinese-folk-story-about-honesty/"
 
 save(list=c("delay.guesses","performance.guess","team.name"), file="stat462final.RData")
