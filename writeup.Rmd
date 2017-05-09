@@ -114,7 +114,9 @@ $$
 
 # Supervised analysis
 
-Before we began our supervised analysis, we created new features in the data. After looking at the raw data given to us about the flights we guess on, we determined that there was not much information there. We built features based on previous events in the day, mostly focusing on the percentage of previous flights that have been affected by events that day. For each day, we calculated what percent of flights were delayed before the plane was scheduled to leave, and we did the same for weather delay, national air system delay, and delays on arrival flights. Because percent of flights delayed at a given point is not very indicative of the rate of delays at a certain time, we created a feature based on the derivative of these ratios as a function of time. In calculating this, we kept the denominator of the ratio fixed and equal to the total number of flights scheduled for that day.
+Before we began our supervised analysis, we created new features in the data. After looking at the raw data given to us about the flights we guess on, we determined that there was not much information there. We built features based on previous events in the day, mostly focusing on the percentage of previous flights that have been affected by events that day. For each day, we calculated what percent of flights were delayed before the plane was scheduled to leave, and we did the same for weather delay, national air system delay, and delays on arrival flights. We also added a variable for the time that an outgoing flight was scheduled to leave Pittsburgh, or the time an incoming flight was scheduled to arrive in Pittsburgh.
+
+Because percent of flights delayed at a given point is not very indicative of the rate of delays at a certain time, we created a feature based on the derivative of these ratios as a function of time. In calculating this, we kept the denominator of the ratio fixed and equal to the total number of flights scheduled for that day.
 
 ## Mixture Models
 
@@ -133,11 +135,11 @@ knitr::kable(model.table, caption = "Unused model summary")
 
 For each model we first generated a training error. If it was close to or better than the base rate, we then generated a test error. If the test error was then better than the base, rate we then saw how many flights were guessed to be delayed in the submission dataset.
 
-## Decision: Random Forests
+## Resolution: Random Forests
 
 We chose to use random forest because we are working in high dimensional space. Random forests can perform variable selection by choosing important predictors to split on and can also account for interactions between predictors. We used the ratio features we created, time variables, and distance variables. As can be seen in the variable importance plot, the most important predictors are the day, the percent of flights delayed on that day so far, and Pittsburgh time. These last two predictors are the same for departing flights, so they are correlated. Since random forest automatically accomodates interactions, this is not an issue
 
-![Variable ](./variable-importance.png)
+![](./variable-importance.png)
 
 The training and test error for the random forest are both slightly greater than the base rate, but it at least makes a prediction that *some* flights are delayed. This model is better than the mixture model because it was not trained on variables that were created from the truth.
 
@@ -145,7 +147,7 @@ The training and test error for the random forest are both slightly greater than
 
 For our final model, a random forest, we guess that 14 flights would be delayed out of the 871 provided in the guessing dataset. We chose to use a random forest for these guesses as it was the only model that both provided useful predictions close to the base rate, but also did not guess the *same thing* for every single flight.
 
-If we wanted to improve the dataset provided, there are several approaches we could have pursued. One approach would have been to expand the dataset beyond the city of Pittsburgh, perhaps picking up on trends in airports that could have indirectly affected Pittsburgh. In the expansion, we could perhaps more easily track individual planes, and find a relationship between specific planes and delays.
+If we wanted to improve the dataset provided, there are several approaches we could have pursued. One approach would have been to expand the dataset beyond the city of Pittsburgh, perhaps picking up on trends in airports that could have indirectly affected Pittsburgh. We would then have more information into the underlying causes of flight delays. In the expansion, we could perhaps more easily track individual planes, and find a relationship between specific planes and delays.
 
 Additionally, we could have expanded the breadth of the dataset by including Twitter data. Previous attempts at predicting delays$^1$ using this dataset have used volume of negative sentiment of the tweets to predict delays in airports. While it didn't predict it perfectly, it is an interesting approach that is worth taking a look at.
 
