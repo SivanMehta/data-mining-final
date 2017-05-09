@@ -11,7 +11,9 @@ library(poLCA)
 # offset = a number to recode a binary variable
 # log = if the probabilities should be on the logarithmic scale
 # OUTPUTS
-# returns
+# returns 
+# Function taken from Cosma Shalizi 36-402 S17
+# http://www.stat.cmu.edu/~cshalizi/ADAfaEPoV/
 dmultbinarymix <- function(x, model, offset=1, log=FALSE) {
   x <- x-offset # this recodes so that it's actually binary
   # remakes the probabilities matrices from the poLCA object
@@ -51,5 +53,9 @@ lcm <- poLCA(cbind(NAS.delay.ratio.ind, weather.delay.ratio.ind) ~ 1,
 train_pred <- ifelse(dmultbinarymix(train_lcm, lcm) > 0.5, 0, 1)
 vis_pred <- ifelse(dmultbinarymix(vis_lcm, lcm) > 0.5, 0, 1)
 
-train_err <- mean(train_pred != train$DEP_DEL15)
-vis_err <- mean(vis_pred != vis$DEP_DEL15)
+lcm_train_err <- mean(train_pred != train$DEP_DEL15)
+lcm_vis_err <- mean(vis_pred != vis$DEP_DEL15)
+
+class_probs <- lcm$P
+cond_weather <- lcm$probs$weather.delay.ratio.ind
+cond_NAS <- lcm$probs$NAS.delay.ratio.ind
