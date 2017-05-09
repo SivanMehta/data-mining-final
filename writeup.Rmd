@@ -14,6 +14,7 @@ source("./analysis/clean-data.R")
 source("./analysis/timeseries.R")
 library(ggplot2)
 library(dplyr)
+library(knitr)
 ```
 
 # Introduction
@@ -99,17 +100,22 @@ knitr::kable(model.table)
 
 We then made predictions using a mixture model. The mixture model was trained on an indicator variable which was based on current truth, which is not available in the guess data set which is why we predicted that all flights are not delayed.
 
-- How did you make your predictions? Describe this process in detail.
-- You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described.
-- What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it?
-- If there were tuning parameters, how did you pick their values? Can you explain anything about the nature of the relationship between the predictors in your model and the predictions themselves?
-- Explain what all of the indicator variables
-    - how were they formed
-    - why we thought they would be useful
-- Explain each methodology's approach
-    - linear model / glm / naive bayes
-    - random forest
-    - mixture model
-    - how we used each of the variables
-- why do we think we failed?
-- Desired changes to problem that would have helped us
+## 2016 Flight Delay Predictions Attempt 1
+
+Because we found that flights delays are relatively rare, we hypothesized that the distribution of flights that were not delayed is different from the distribution of flights that were delayed. We utlized latent class regression as implemented in the `poLCA` package to predict the probability of class membership, using indicator variables for weather delay and NAS delay as predictors. In this method, we were able to cluster the data into two separate groups, and evaluate a density on each group. 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+source("./analysis/mixmodels.R")
+```
+
+From our latent class regression, we found that data had a probability of `r round(class_probs[1], 4)` of being in class 1, and a probability of `r round(class_probs[2], 4)` of being in class 2. These clearly correspond to delayed flights being class 2 and non-delayed flights being class 1. 
+When conditioned on class membership, we found that data in class 1 had almost 0 probability of having either type of delay, but data in class 2 had less polar splits in probability. 
+
+`r kable(cond_weather, digits = 4, caption = "Weather delay class conditional probabilities")`
+`r kable(cond_NAS, digits = 4, caption = "NAS delay class conditional probabilities")`
+
+$\sum_{c \in 1, 2} P(X_{class} = c) \prod_{d \in {weather.delay, NAS.delay}} P(d=1 | class = c)^{X_d} \cdot P(d = 0 | class = c)^{1 - X_d}$
+
+In our evaluation, the overall probability for each data point was calculated by multiplying together the conditional probabilities of each predictor, and weighting by the class probabilities. 
+
+When evaluated on our 2015 training data and our 2016 testing data, we had a training error of `r round(lcm_train_err, 4)` and a testing error of `r round(lcm_vis_err, 4)`- both of which beat our base rate. However, when we evaluted on our prediction set, we were unable to generate the indicator variables for weather delay and NAS delay directly from the prediction set; thus, we had to rely on the data in the test set to generate these features. This resulted in predicting that all flights were not delayed. 
