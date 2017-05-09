@@ -10,7 +10,7 @@ guesses.2016 <- data.2016[which(data.2016$is.guess == 1), ]
 # and additive models with training error, test error, and number of delays predicted in guess set
 
 models <- c("base rate", "linear model", "random forest", "complete linkage clustering",
-            "prototype clustering", "svm", "naive bayes", "additive models")
+            "prototype clustering", "svm", "mixture models")
 model.table <- as.data.frame(models)
 model.table$training.error <- 1
 model.table$test.error <- ""
@@ -23,7 +23,6 @@ to.percent <- function(error) {
 # base rate
 model.table[1, 2] <- to.percent(length(which(train$DEP_DEL15 > 0)) / nrow(train))
 model.table[1, 3] <- to.percent(length(which(vis$DEP_DEL15 > 0)) / nrow(vis))
-model.table[1, 4] <- "NA"
 
 # linear model
 model.table[2, 2] <- to.percent(y.hat.2[1])
@@ -60,3 +59,8 @@ model.table[6, 2] <- to.percent(.1646)
 # vis.pred <- ifelse(vis.pred > 0.5, 1, 0)
 # misclass.test <- length(which(vis$DEP_DEL15 == vis.pred)) / nrow(vis)
 model.table[6, 3] <- to.percent(.0894)
+
+# Mixture Models (from anna's session)
+model.table[7, 2] <- to.percent(.1202)
+model.table[7, 3] <- to.percent(.0657)
+model.table[7, 4] <- 0
