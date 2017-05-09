@@ -5,19 +5,10 @@ data.2016 <- add.features(data.2016)
 train <- add.features(train)
 vis <- add.features(vis)
 
-source("./analysis/mixmodels.R")
-
 guesses.2016 <- data.2016[which(data.2016$is.guess == 1), ]
 
-n <- c("arr.delay.ratio.ind", "dep.delay.ratio.ind")
-vis_lcm <- vis[,n] + 1
-train_lcm <- train[,n] + 1
-test_lcm <- guesses.2016[,n] + 1
-
-lcm <- poLCA(cbind(arr.delay.ratio.ind, dep.delay.ratio.ind) ~ 1,
-             train_lcm, nclass = 2, verbose = FALSE)
-
-predictions <- ifelse(dmultbinarymix(test_lcm, lcm) > 0.5, 0, 1)
+testPreds = predict(rf.ind, newdata = guesses.2016, type = "response")
+predictions = ifelse(testPreds > 0.5, 1, 0)
 
 delay.guesses <- predictions
 performance.guess <- y.hat.2[2]
