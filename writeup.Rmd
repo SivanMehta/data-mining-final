@@ -93,6 +93,7 @@ We had many approaches to making a prediction model. We began with a random fore
 
 ```{r}
 source("./analysis/model-table.R")
+knitr::kable(model.table)
 ```
 
 
