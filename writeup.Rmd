@@ -91,7 +91,7 @@ Before we began our supervised analysis, we created new features in the data. Af
 
 We had many approaches to making a prediction model. We began with a random forest on all predictors to determine the most important ones by using a variable importance plot. We then put these predictors into linear models, additive models, logistic regression models, splines, k nearest neighbor, and kernel smoothers. These models proved to be at or near the base rate of classifying delayed and not delayed flights. You can compare the misclassification rate of the various attempted models in the training set and test set in the following table:
 
-```{r}
+```{r, warning = FALSE}
 source("./analysis/model-table.R")
 knitr::kable(model.table)
 ```

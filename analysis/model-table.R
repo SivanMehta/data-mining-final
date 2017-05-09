@@ -1,4 +1,7 @@
 source("./features/add-features.R")
+train <- add.features(train)
+vis <- add.features(vis)
+data.2016 <- add.features(data.2016)
 source("./analysis/Linear.R")
 guesses.2016 <- data.2016[which(data.2016$is.guess == 1), ]
 
@@ -6,12 +9,12 @@ guesses.2016 <- data.2016[which(data.2016$is.guess == 1), ]
 # logistic regression, complete linkage and prototype clustering, svms, naive bayes
 # and additive models with training error, test error, and number of delays predicted in guess set
 
-models <- c("base rate", "linear model", "random forest", "logistic lasso",
-            "complete linkage clustering", "prototype clustering", "svm", "naive bayes", "additive models")
+models <- c("base rate", "linear model", "random forest", "complete linkage clustering", 
+            "prototype clustering", "svm", "naive bayes", "additive models")
 model.table <- as.data.frame(models)
 model.table$training.error <- 1
-model.table$test.error <- 1
-model.table$guess.delayed <- 1
+model.table$test.error <- NA
+model.table$guess.delayed <- NA
 
 to.percent <- function(error) {
   paste(round(error * 100, 2), "%", sep = "")
@@ -31,3 +34,12 @@ model.table[2, 4] <- predictions.y.hat
 
 rm(y.hat.lm)
 rm(predictions.y.hat)
+
+# random forest
+# (copied from someone else's session because it takes really long to run)
+model.table[3, 2] <- to.percent(0.1699)
+model.table[3, 3] <- to.percent(0.0916)
+
+# clustering
+model.table[4, 2] <- to.percent(misclass.com)
+model.table[5, 2] <- to.percent(misclass.proto)
