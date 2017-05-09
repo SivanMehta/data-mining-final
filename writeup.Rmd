@@ -14,6 +14,7 @@ source("./analysis/clean-data.R")
 source("./analysis/timeseries.R")
 library(ggplot2)
 library(dplyr)
+library(knitr)
 ```
 
 # Introduction
@@ -48,7 +49,7 @@ ggplot(delays_per_day) +
   geom_line(aes(x = FL_DATE, y = DEP_DELAY_TOT), alpha = .1) +
   geom_line(aes(x = FL_DATE, y = DEP_AVG_7), color = "red", alpha = .5) +
   geom_line(aes(x = FL_DATE, y = DEP_AVG_30), color = "blue", size = 1) +
-  labs(x = "Date of Flight", y = "Number of Delays", 
+  labs(x = "Date of Flight", y = "Number of Delays",
        title = "Delays per day, with weekly average in red, monthly average in blue")
 ```
 
@@ -87,13 +88,34 @@ Generally, these are doing pretty poorly, garnering misclassification rates of n
 
 # Supervised analysis
 
-Before we began our supervised analysis, we created new features in the data. After looking at the raw data given to us about the flights we need guess on, we determined that there was not much information there. We built features based on previous events in the day, mostly focusing on the percentage of flights that have been affected by events that day. For each day, we calculated what percent of flights were delayed before the plane was scheduled to leave, and we did the same for weather delay, national air system delay, and delays on arrival flights. Because percent of flights delayed at a given point is not very indiciative of the rate of delays at a certain time, we created a feature based on the derivative of these ratios as a function of time. In calculating this, we kept the denominator of the ratio fixed and equal to the total number of flights scheduled for that day. 
+Before we began our supervised analysis, we created new features in the data. After looking at the raw data given to us about the flights we need guess on, we determined that there was not much information there. We built features based on previous events in the day, mostly focusing on the percentage of flights that have been affected by events that day. For each day, we calculated what percent of flights were delayed before the plane was scheduled to leave, and we did the same for weather delay, national air system delay, and delays on arrival flights. Because percent of flights delayed at a given point is not very indicative of the rate of delays at a certain time, we created a feature based on the derivative of these ratios as a function of time. In calculating this, we kept the denominator of the ratio fixed and equal to the total number of flights scheduled for that day.
 
-We had many approaches to making a prediction model. We began with a random forest on all predictors to determine the most important ones by using a variable importance plot. We then put these predictors into linear models, additive models, logistic regression models, splines like k nearest neighbor and kernel smoothers. These models proved to be at or near the base rate of classifying delayed and not delayed flights. 
+We had many approaches to making a prediction model. We began with a random forest on all predictors to determine the most important ones by using a variable importance plot. We then put these predictors into linear models, additive models, logistic regression models, splines, k nearest neighbor, and kernel smoothers. These models proved to be at or near the base rate of classifying delayed and not delayed flights. You can compare the misclassification rate of the various attempted models in the training set and test set in the following table. For each model we first generated a training error. If it was close to or better than the base rate, we then generated a test error. If the test error was then better than the base, rate we then saw how many flights were guessed to be delayed in the submission dataset.
 
-We made predictions using a mixture model. The mixture model was trained on an indicator variable which was based on current truth, which is not available in the guess data set which is why we predicted that all flights are not delayed.
+```{r, warning = FALSE}
+source("./analysis/model-table.R")
+knitr::kable(model.table)
+```
 
-- How did you make your predictions? Describe this process in detail.
-- You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described.
-- What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it?
-- If there were tuning parameters, how did you pick their values? Can you explain anything about the nature of the relationship between the predictors in your model and the predictions themselves?
+
+We then made predictions using a mixture model. The mixture model was trained on an indicator variable which was based on current truth, which is not available in the guess data set which is why we predicted that all flights are not delayed.
+
+## 2016 Flight Delay Predictions Attempt 1
+
+Because we found that flights delays are relatively rare, we hypothesized that the distribution of flights that were not delayed is different from the distribution of flights that were delayed. We utlized latent class regression as implemented in the `poLCA` package to predict the probability of class membership, using indicator variables for weather delay and NAS delay as predictors. In this method, we were able to cluster the data into two separate groups, and evaluate a density on each group. 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+source("./analysis/mixmodels.R")
+```
+
+From our latent class regression, we found that data had a probability of `r round(class_probs[1], 4)` of being in class 1, and a probability of `r round(class_probs[2], 4)` of being in class 2. These clearly correspond to delayed flights being class 2 and non-delayed flights being class 1. 
+When conditioned on class membership, we found that data in class 1 had almost 0 probability of having either type of delay, but data in class 2 had less polar splits in probability. 
+
+`r kable(cond_weather, digits = 4, caption = "Weather delay class conditional probabilities")`
+`r kable(cond_NAS, digits = 4, caption = "NAS delay class conditional probabilities")`
+
+$\sum_{c \in 1, 2} P(X_{class} = c) \prod_{d \in {weather.delay, NAS.delay}} P(d=1 | class = c)^{X_d} \cdot P(d = 0 | class = c)^{1 - X_d}$
+
+In our evaluation, the overall probability for each data point was calculated by multiplying together the conditional probabilities of each predictor, and weighting by the class probabilities. 
+
+When evaluated on our 2015 training data and our 2016 testing data, we had a training error of `r round(lcm_train_err, 4)` and a testing error of `r round(lcm_vis_err, 4)`- both of which beat our base rate. However, when we evaluted on our prediction set, we were unable to generate the indicator variables for weather delay and NAS delay directly from the prediction set; thus, we had to rely on the data in the test set to generate these features. This resulted in predicting that all flights were not delayed. 
