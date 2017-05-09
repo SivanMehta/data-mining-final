@@ -16,7 +16,9 @@ drops_all <- c("ORIGIN_AIRPORT_ID", "ORIGIN_AIRPORT_SEQ_ID", "ORIGIN_CITY_MARKET
 
 keep.2016 <- c("DEP_DEL15", "WEATHER_DELAY", "DIVERTED",
               "NAS_DELAY", "ORIGIN", "DEST", "ARR_DEL15",
-              "MONTH", "DAY_OF_MONTH", "CRS_DEP_TIME", "FL_DATE")
+              "MONTH", "DAY_OF_MONTH", "CRS_DEP_TIME", "FL_DATE",
+              "DISTANCE", "DAY_OF_WEEK", "DISTANCE_GROUP", "QUARTER", 
+              "CRS_ELAPSED_TIME", "CRS_ARR_TIME")
 
 replace <- c("CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY",
              "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "FIRST_DEP_TIME",
@@ -79,18 +81,6 @@ vis <- clean_data_vis()
 data.2016 <- clean_data_2016()
 
 
-# add a column of the time a flight arrives in PIT or leaves from PIT
-pit_time <- function(dat) {
-  if (dat[10] == "PIT") {
-    return(dat[14])
-  } else if (dat[12] == "PIT") {
-    return(dat[25])
-  }
-}
-
-train$CRS_PIT_TIME <- apply(train, 1, pit_time)
-vis$CRS_PIT_TIME <- apply(vis, 1, pit_time)
-
 clear_NA <- function(df) {
   df$is.guess <- ifelse(is.na(df$DIVERTED), 1, 0)
 
@@ -103,3 +93,17 @@ clear_NA <- function(df) {
 train <- clear_NA(train)
 vis <- clear_NA(vis)
 data.2016 <- clear_NA(data.2016)
+
+# add a column of the time a flight arrives in PIT or leaves from PIT
+pit_time <- function(dat) {
+  if (dat[which(names(dat) == "ORIGIN")] == "PIT") {
+    return(as.integer(dat[[which(names(dat) == "CRS_DEP_TIME")]]))
+  } else if (dat[which(names(dat) == "DEST")] == "PIT") {
+    return(as.integer(dat[[which(names(dat) == "CRS_ARR_TIME")]]))
+  }
+}
+
+train$CRS_PIT_TIME <- apply(train, 1, pit_time)
+vis$CRS_PIT_TIME <- apply(vis, 1, pit_time)
+data.2016$CRS_PIT_TIME <- apply(data.2016, 1, pit_time)
+
