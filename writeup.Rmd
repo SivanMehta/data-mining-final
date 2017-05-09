@@ -128,3 +128,6 @@ knitr::kable(model.table)
 ```
 
 ## Resolution: Random Forests
+We chose to use random forest because we are working in high dimensional space, and random forest can perform variable selection by choosing important predictors to split on, and can also account for interactions between predictors. We used the ratio features we created, time variables, and distance variables. As can be seen in the variable importance plot, the most important predictors are the day, the percent of flights delayed on that day so far, the scheduled departure time and the time the plane was scheduled to be in pittsburgh. These last two predictors are the same for departing flights, so they are correlated. Since random forest can accomodate interactions, there is no issue. 
+
+![Variable Importance Plot](./variable-importance.png)
