@@ -1,4 +1,6 @@
 
+library(randomForest)
+
 # Models
 source("./analysis/clean-data.R")
 source("./features/add-features.R")
@@ -6,19 +8,25 @@ source("./features/add-features.R")
 train = add.features(train)
 vis = add.features(vis)
 
+train$day = yday(train$FL_DATE)
+vis$day = yday(vis$FL_DATE)
+
 takeout = c("FL_DATE", "DEP_TIME", "WHEELS_OFF", "WHEELS_ON", "TAXI_OUT", "TAXI_IN", "TAIL_NUM", "AIRLINE_ID", 
             "FL_NUM", "DEP_DELAY", "DEP_DELAY_GROUP", "DEP_DELAY_NEW", "CANCELLED", "CANCELLATION_CODE", 
             "ACTUAL_ELAPSED_TIME", "AIR_TIME", "CARRIER_DELAY", "WEATHER_DELAY", "NAS_DELAY", "ARR_TIME", 
             "ARR_DELAY_NEW", "SECURITY_DELAY", "LATE_AIRCRAFT_DELAY", "ARR_DEL15",
             "ARR_DELAY_GROUP", "DIVERTED", "UNIQUE_CARRIER", "dep.delay.ratio.ind", "arr.delay.ratio.ind",
-            "NAS.delay.ratio.ind")
+            "NAS.delay.ratio.ind", "weather.delay.ratio.ind", "ORIGIN", "DEST","TOTAL_ADD_GTIME", 
+            "FIRST_DEP_TIME", "LONGEST_ADD_GTIME", "index", "DAY_OF_YEAR")
 train = train[, !(names(train) %in% takeout)]
 vis = vis[, !(names(vis) %in% takeout)]
 
 
 # Random Forest 
-library(randomForest)
-rf = randomForest(as.factor(DEP_DEL15)~., data = train, importance=TRUE)
+rf = randomForest(as.factor(DEP_DEL15)~ day + dep.delay.ratio + CRS_ELAPSED_TIME + MONTH + 
+                    NAS.delay.ratio + weather.delay.ratio + DAY_OF_MONTH + 
+                    DISTANCE + CRS_PIT_TIME + CRS_DEP_TIME + QUARTER +
+                    DAY_OF_WEEK + DISTANCE_GROUP, data = train, importance=TRUE)
 errTrain.rf = mean(train$DEP_DEL15 != rf$predicted) 
 
 testPreds = predict(rf, newdata = vis, type = "response")
