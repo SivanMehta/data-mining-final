@@ -3,15 +3,6 @@
 # R script for svm 
 # Data documentation: https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236
 
-library(e1071)
-
-source("analysis/clean-data.R")
-source("features/add-features.R")
-
-train <- add.features(train)
-vis <- add.features(vis)
-
-
 select.names <- c("weather.delay.ratio", "CRS_PIT_TIME")
 train_df <- data.frame(x = train[,select.names], y = train$DEP_DEL15)
 vis_df <- data.frame(x = vis[,select.names])
