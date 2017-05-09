@@ -39,6 +39,7 @@ rm(predictions.y.hat)
 # (copied from someone else's session because it takes really long to run)
 model.table[3, 2] <- to.percent(0.1699)
 model.table[3, 3] <- to.percent(0.0916)
+model.table[3, 4] <- 14
 
 # clustering
 model.table[4, 2] <- to.percent(1 - misclass.com)
