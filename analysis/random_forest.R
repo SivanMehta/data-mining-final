@@ -2,7 +2,6 @@
 # Models
 source("./analysis/clean-data.R")
 source("./features/add-features.R")
-example <- train[1:5000, ]
  
 train = add.features(train)
 vis = add.features(vis)
@@ -20,7 +19,7 @@ vis = vis[, !(names(vis) %in% takeout)]
 # Random Forest 
 library(randomForest)
 rf = randomForest(as.factor(DEP_DEL15)~., data = train, importance=TRUE)
-errTrain.rf = mean(train$DEP_DEL15 != rf$predicted) # .1725 Not good
+errTrain.rf = mean(train$DEP_DEL15 != rf$predicted) 
 
 testPreds = predict(rf, newdata = vis, type = "response")
 errTest.vis = mean(vis$DEP_DEL15 != testPreds)
@@ -42,6 +41,28 @@ errTest.vis = mean(vis.rf$DEP_DEL15 != rf$predicted)
 
 importantVars = importantVars[order[importantVars[,3]]]
 
+#Try 2
+rf = randomForest(DEP_DEL15 ~ dep.delay.ratio + weather.delay.ratio + arr.delay.ratio + NAS.delay.ratio, 
+                  data = train, importance = TRUE)
+rf.predicted = ifelse(rf$predicted > 0.5, 1, 0)
+errTrain.rf = mean(train$DEP_DEL15 != rf.predicted) 
+rf.errTrain = predict(rf, newdata = train, type = "response")
 
 
+# With indicator Vars
+rf.ind = randomForest(DEP_DEL15 ~ arr.delay.ratio.ind + arr.delay.ratio.ind + NAS.delay.ratio.ind,
+                      data = train, importance = TRUE)
+varImpPlot(rf.ind, main = "Variable importance plots")
 
+rf.predicted = ifelse(rf.ind$predicted > 0.5, 1, 0)
+errTrain.rf = mean(train$DEP_DEL15 != rf.predicted) 
+rf.errTrain = predict(rf.ind, newdata = train, type = "response")
+
+testPreds = predict(rf.ind, newdata = vis, type = "response")
+testPreds = ifelse(testPreds > 0.5, 1, 0)
+errTest = mean(vis$DEP_DEL15 != testPreds)
+
+errTest.vis = mean(vis.rf$DEP_DEL15 != rf$predicted)
+
+testPreds = predict(rf.ind, newdata = guess, type = "response")
+testPreds = ifelse(testPreds > 0.5, 1, 0)

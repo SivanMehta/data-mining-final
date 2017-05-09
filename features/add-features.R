@@ -20,25 +20,15 @@ add.features <- function(df) {
   # weather delays
   df <- add.delay(df, weather.indicator, "weather.delay.ratio")
 
-  #nas delays
+  # nas delays
   df <- add.delay(df, NAS.indicator, "NAS.delay.ratio")
   #
   # # departure delay ratio
-  # df <- add.delay(df, dep.indicator, "dep.delay.ratio")
+  df <- add.delay(df, dep.indicator, "dep.delay.ratio")
   #
   # # arrival delay ratio
-  # df <- add.delay(df, arr.indicator, "arr.delay.ratio")
+  df <- add.delay(df, arr.indicator, "arr.delay.ratio")
 
-  derivative <- rep(0, nrow(df))
-  for (i in 5:nrow(df)) {
-    derv_avg <- 0
-    for (j in 1:4) {
-      derv_avg = derv_avg + (df$weather.delay.ratio[i] - df$weather.delay.ratio[(i-j)])
-    }
-    derivative[i] <- derv_avg / 4
-  }
-  df$derivative <- derivative
-  
   return(df)
 }
 

@@ -19,17 +19,17 @@ library(knitr)
 
 # Introduction
 
-The dataset at hand is a concerns flights to and from the Pittsburgh International Airport (PIT). Each observation is a single flight either entering or leaving Pittsburgh. While the predictive focus will be on departing flights, we will also look at flights overall to get a general structural overview of the dataset.
+The dataset at hand concerns flights to and from the Pittsburgh International Airport (PIT). Each observation is a single flight either entering or leaving Pittsburgh. While the predictive focus will be on departing flights, we will also look at flights overall to get a general structural overview of the dataset.
 
 Of the 57 variables provided, they can be split into a few primary groups. Time Period information concerns the date of the flight. Airline information pertains to the specific airline and carrier of the flight. Origin information concerns origin airport details, and Destination information contains similar details. Departure and Arrival performance information contains metrics on the delays, taxiing, etc. Finally, there are general delay metrics, detailing the breakdown of what contributed to the overall delay, if any.
 
 To predict flights, we will be working with three data sets with flight data from the Pittsburgh airport. Our training dataset is all the arrivals and departures from 2015. Our test data is arrivals and departures up to a random timepoint in the day. After that time point, we have unlabeled data on which we will form our guesses.
 
-In this report, we will focus on *departing* flights, looking to predict whether or not the flight will be delayed. We will first take a general unsupervised learning approach, attempting to ascertain any underlying structure to the dataset. Then we will move towards supervised analysis, attempting to actually predict whether or not a flight will be delayed.
+In this report, we will focus on *departing* flights and predict whether or not the flight will be delayed. We will first take a general unsupervised learning approach, attempting to ascertain any underlying structure to the dataset. Then we will move towards supervised analysis, attempting to actually predict whether or not a flight will be delayed.
 
 # EDA and unsupervised analysis
 
-First, we'll examine delays on each day, in order to reduce *some* of the noise, we'll also plot a some moving averages of delays.
+First, we'll examine delays on each day, in order to reduce *some* of the noise, we'll also plot some moving averages of delays.
 
 ```{r, warning = FALSE}
 by_date <- group_by(train, FL_DATE)
@@ -49,7 +49,7 @@ ggplot(delays_per_day) +
   geom_line(aes(x = FL_DATE, y = DEP_DELAY_TOT), alpha = .1) +
   geom_line(aes(x = FL_DATE, y = DEP_AVG_7), color = "red", alpha = .5) +
   geom_line(aes(x = FL_DATE, y = DEP_AVG_30), color = "blue", size = 1) +
-  labs(x = "Date of Flight", y = "Number of Delays", 
+  labs(x = "Date of Flight", y = "Number of Delays",
        title = "Delays per day, with weekly average in red, monthly average in blue")
 ```
 
@@ -88,10 +88,11 @@ Generally, these are doing pretty poorly, garnering misclassification rates of n
 
 # Supervised analysis
 
-- How did you make your predictions? Describe this process in detail.
-- You can use any of the classification techniques that we learned in the first half of the course, or any other techniques as long as they are adequately described.
-- What predictor variables did you include? How did you engineer features from the data? What technique did you use for prediction, and why did you choose it?
-- If there were tuning parameters, how did you pick their values? Can you explain anything about the nature of the relationship between the predictors in your model and the predictions themselves?
+Before we began our supervised analysis, we created new features in the data. After looking at the raw data given to us about the flights we need guess on, we determined that there was not much information there. We built features based on previous events in the day, mostly focusing on the percentage of flights that have been affected by events that day. For each day, we calculated what percent of flights were delayed before the plane was scheduled to leave, and we did the same for weather delay, national air system delay, and delays on arrival flights. Because percent of flights delayed at a given point is not very indiciative of the rate of delays at a certain time, we created a feature based on the derivative of these ratios as a function of time. In calculating this, we kept the denominator of the ratio fixed and equal to the total number of flights scheduled for that day. 
+
+We had many approaches to making a prediction model. We began with a random forest on all predictors to determine the most important ones by using a variable importance plot. We then put these predictors into linear models, additive models, logistic regression models, splines like k nearest neighbor and kernel smoothers. These models proved to be at or near the base rate of classifying delayed and not delayed flights. 
+
+We made predictions using a mixture model. The mixture model was trained on an indicator variable which was based on current truth, which is not available in the guess data set which is why we predicted that all flights are not delayed.
 
 ## 2016 Flight Delay Predictions Attempt 1
 
