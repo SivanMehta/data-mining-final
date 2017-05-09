@@ -3,6 +3,5 @@
 *.RData
 .Rhistory
 .Rproj.user
-*.pdf
 
 *_cache/
